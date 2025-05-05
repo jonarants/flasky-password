@@ -1,0 +1,14 @@
+FROM python:3.12-slim
+
+WORKDIR /var/www/formulariocitas
+
+COPY requirements.txt /var/www/formulariocitas/
+RUN pip install --no-cache-dir -r  /var/www/formulariocitas/requirements.txt
+
+COPY ./formulariocitas/ /var/www/formulariocitas/
+
+RUN chown -R www-data:www-data /var/www/formulariocitas
+
+EXPOSE 5000
+USER www-data
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
