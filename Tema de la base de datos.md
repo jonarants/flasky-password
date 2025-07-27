@@ -6,13 +6,22 @@
 
 - Como tal se creo un volumen, los pasos están acomodados por encabezados para dar un seguimiento apropiado al texto.
 
+
 ## Nombre del volumen
+
+```bash
+docker volume create myDB
+```
+
 
 Volumen: myDB (Persistencia de datos)
 
 ## Creación del contenedor
 ```bash
 docker build -t my-sql:v1 .
+
+docker build -f Dockerfile.mysql -t my-sql:v1 .
+
 ```
 ## Ejecución del contenedor
 ```bash
@@ -34,7 +43,7 @@ mysql -u root -p
 Se genera un usario nuevo siguiendo la información del texto, esto a manera de dar seguimiento correcto.
 
 ```bash
-CREATE USER 'lsi'@'localhost' IDENTIFIED BY 'lsi';
+CREATE USER 'lsi'@'%' IDENTIFIED BY 'lsi';
 ```
 El usuario creado es de nombre *lsi* con la contraseña *lsi*.
 
@@ -45,6 +54,9 @@ De esta manera se le dan los persmisos necesarios para la creación indexación,
 GRANT CREATE, ALTER, DROP, INSERT, UPDATE, INDEX, DELETE, SELECT, REFERENCES, RELOAD on *.* TO 'lsi'@'%' WITH GRANT OPTION;
 ```
 
+```bash
+FLUSH PRIVILEGES;
+```
 
 ## Conexión con usuario lsi
 
@@ -60,19 +72,23 @@ FLUSH PRIVILEGES;
 ```
 ## Creación de base de datos
 
-Se crea una base de datos de nombre invitados
+Se crea una base de datos de nombre login_user_data
 ```bash
-CREATE DATABASE IF NOT EXISTS invitados;
+CREATE DATABASE IF NOT EXISTS login_user_data;
 ```
 
-Se hace uso de la base de datos invitados
+Se hace uso de la base de login_user_data
 ```bash
-USE invitados;
+USE login_user_data;
 ```
 Se crea la table de la base de datos
 ```bash
-CREATE TABLE IF NOT EXISTS clients ( id INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(255) NOT NULL, apellido VARCHAR(255) NOT NULL, telefono VARCHAR(15) NOT NULL UNIQUE);
+CREATE TABLE IF NOT EXISTS clientes ( id INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(255) NOT NULL, apellido VARCHAR(255) NOT NULL, telefono VARCHAR(15) NOT NULL UNIQUE);
 ```
+```bash
+CREATE TABLE IF NOT EXISTS users ( id INT AUTO_INCREMENT PRIMARY KEY, user VARCHAR(255) NOT NULL UNIQUE, password VARCHAR(20) NOT NULL);
+```
+
 ## Mostrar tablas
 ```bash
 SHOW TABLES
@@ -95,6 +111,12 @@ CREATE TABLE IF NOT EXISTS clientes (
     apellido VARCHAR(255) NOT NULL, 
     telefono VARCHAR(15) NOT NULL UNIQUE 
 );
+-- Crear la tabla users con restricción de unicidad en el usuario
+CREATE TABLE IF NOT EXISTS users ( 
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    user VARCHAR(255) NOT NULL UNIQUE, 
+    password VARCHAR(20) NOT NULL
+    );
 ```
 
 La ejecución se haría a manera de este comando:
@@ -137,6 +159,9 @@ app.run(host='0.0.0.0', port=5000, debug=True)
 ```bash
 docker build -t nginx:v1 -f Dockerfile.nginx .   
 ```
+
+```bash
+docker run -d -p 8080:8080 --name nginx nginx:v1   
 
 ## NGINX Conf
 
