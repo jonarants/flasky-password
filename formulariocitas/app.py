@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request
+from flask_bcrypt import Bcrypt
 import mysql.connector
 import os
 app = Flask(__name__)
+bcrypt = Bcrypt (app)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY')
 def get_db_config():
     return {
@@ -12,6 +14,9 @@ def get_db_config():
         'database': os.environ.get('MYSQL_DATABASE')
     }
 
+def hash_password(password):
+    return bcrypt.generate_password_hash(password).decode('utf-8')
+
 @app.route('/login')
 def login():
     return render_template('login.html')
@@ -20,11 +25,13 @@ def login():
 def logging_in():
     user = request.form['user']
     password = request.form['password']
+    hashed_password = hash_password(password)
+    #is_valid = bcrypt.check_password_hash(hashed_password, password)
     try: 
         config = get_db_config()
         connection = mysql.connector.connect(**config)
         cursor = connection.cursor()
-        cursor.execute('INSERT INTO users (user,password) VALUES (%s,%s)',(user,password))
+        cursor.execute('INSERT INTO users (user,password) VALUES (%s,%s)',(user,hashed_password))
         connection.commit()
         cursor.close()
         return render_template ('resultado3.html' ,user=user)
@@ -43,6 +50,7 @@ def logintest():
 def logging_in_test():
     user = request.form['user']
     password = request.form['password']
+    hashed_password = hash_password(password)
     try: 
         config = get_db_config()
         connection = mysql.connector.connect(**config)
@@ -52,7 +60,7 @@ def logging_in_test():
         user_record = cursor.fetchone()
         cursor.close()
         if user_record:
-            if user_record['password'] == password:
+            if bcrypt.check_password_hash(user_record['password'], password): #Compara los hashes para la autenticacion
                 return render_template('resultado3.html', mensaje= f"El usuario {user_record['user']} existe y su contraseña es valida")
             else:
                 return render_template('resultado3.html', mensaje= f"Usuario o contraseña invalidos")
