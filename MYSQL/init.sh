@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS users (
     user VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     two_factor_secret VARCHAR (255),
-    two_factor_enabled BOOLEAN DEFAULT FALSE
+    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    encryption_salt BLOB NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS websites_info (

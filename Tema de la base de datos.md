@@ -139,14 +139,14 @@ pip install -r requirements.txt
 ## Creacion del docker del backend con flask
 
 ```bash
-docker build -t formulariocitas:v1 .
-docker build -t formulario:v1 -f Dockerfile.flask .    
+docker build -t passmanager:v1 .
+docker build -t passmanager:v1 -f Dockerfile.flask .    
 ```
 
 ## Ejecución del docker con flask
 
 ```bash
-docker run -d -p 5000:5000 --name formulario formulario:v1
+docker run -d -p 5000:5000 --name passmanager passmanager:v1
 ```
 
 Ahora en el código se realizo el siguiente cambio:

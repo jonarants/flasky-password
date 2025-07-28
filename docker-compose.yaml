@@ -67,9 +67,9 @@ secrets:
   mysql_password_secret:
     file: ./secrets/MYSQL_PASSWORD.txt
   mysql_host_secret:
-    file: ./secrets/MYSQL_HOST.txt # Aunque este no lo necesita el DB, se mantiene para web
+    file: ./secrets/MYSQL_HOST.txt 
   mysql_port_secret:
-    file: ./secrets/MYSQL_PORT.txt # Lo mismo
+    file: ./secrets/MYSQL_PORT.txt 
   mysql_database_secret:
     file: ./secrets/MYSQL_DATABASE.txt
   flask_secret_key_secret:
