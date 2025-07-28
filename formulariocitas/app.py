@@ -75,18 +75,18 @@ def index():
 
 @app.route('/agregar_cita', methods=['POST'])
 def agregar_cita():
-    nombre = request.form['nombre']
-    apellido = request.form['apellido']
-    telefono = request.form['telefono']
+    user = request.form['user']
+    password = request.form['password']
+    websites = request.form['websites']
     try:
         config = get_db_config()
         connection = mysql.connector.connect(**config)
         cursor = connection.cursor()
-        cursor.execute('INSERT INTO clientes (nombre,apellido,telefono) VALUES(%s,%s,%s)',(nombre,apellido,telefono))
+        cursor.execute('INSERT INTO websites_info (websites,user,password) VALUES(%s,%s,%s)',(websites, user,password))
         connection.commit()
         cursor.close()
         connection.close()
-        return render_template('resultado.html',telefono=telefono,nombre=nombre,apellido=apellido)
+        return render_template('resultado.html',websites=websites,user=user,password=password)
     except Exception as e:
         mensaje="Error al insertar en la base de datos:" + str(e)
         return render_template('resultado2.html',mensaje=mensaje)

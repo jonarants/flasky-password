@@ -10,8 +10,13 @@ services:
     networks:
       - app-network
     container_name: web
-    env_file:
-      - ./.env
+    secrets:
+      - mysql_user_secret
+      - mysql_password_secret
+      - mysql_host_secret
+      - mysql_port_secret
+      - mysql_database_secret
+      - flask_secret_key_secret
   
   nginx:
     build:
@@ -37,7 +42,16 @@ services:
     volumes:
       - myDB:/var/lib/mysql
       - ./MYSQL:/docker-entrypoint-initdb.d
-    container_name: mysql-db
+    container_name: db
+    
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password_file
+
+    secrets:
+      - mysql_user_secret
+      - mysql_password_secret
+      - mysql_database_secret
+      - mysql_root_password_file
 
 networks:
   app-network:
@@ -45,6 +59,21 @@ networks:
 
 volumes:
   myDB:
-    external: true
+    #external: true
 
+secrets:
+  mysql_user_secret:
+    file: ./secrets/MYSQL_USER.txt
+  mysql_password_secret:
+    file: ./secrets/MYSQL_PASSWORD.txt
+  mysql_host_secret:
+    file: ./secrets/MYSQL_HOST.txt # Aunque este no lo necesita el DB, se mantiene para web
+  mysql_port_secret:
+    file: ./secrets/MYSQL_PORT.txt # Lo mismo
+  mysql_database_secret:
+    file: ./secrets/MYSQL_DATABASE.txt
+  flask_secret_key_secret:
+    file: ./secrets/FLASK_SECRET_KEY.txt
+  mysql_root_password_file:
+    file: ./secrets/MYSQL_ROOT_PASSWORD_FILE.txt
   
