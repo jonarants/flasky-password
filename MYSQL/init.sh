@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS websites_info (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    websites VARCHAR(255) NOT NULL, 
+    website VARCHAR(255) NOT NULL, 
     user VARCHAR(255) NOT NULL,     
     password VARCHAR(255) NOT NULL  
 );
