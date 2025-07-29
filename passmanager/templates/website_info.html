@@ -1,22 +1,21 @@
 {% extends "home.html" %}
 {% block content %}
-        <section>
-            <form name="formulario"id="formulario"action="capture_website_data" method="post">
-                <fieldset><legend> Datos del interesado </legend>
-                <label for="website">Webseite:</label>
-                <br>
-                <input type="text" name="Webseite" id="website" value="" placeholder="www.google.com"/> 
-                <br>
-                <label for="user">Username:</label>
-                <br>
-                <input type="text" name="user" id="user" value="" placeholder="Enter the username">
-                <br>
-                <label for="password">Password:</label>
-                <br>
-                <input type="text" name="password" id="password" value="" placeholder="StrongPassword...">
-                <br>
-                <input type="submit" value="Submit"/>
-                </fieldset>
-            </form>    
-        </section>
+<h2>Website's info</h2>
+    <form name="formulario"id="formulario"action="capture_website_data" method="post">
+        <fieldset><legend> Datos del interesado </legend>
+        <label for="website">Website:</label>
+        <br>
+        <input type="text" name="website" id="website" value="" placeholder="www.google.com"/> 
+        <br>
+        <label for="user">Username:</label>
+        <br>
+        <input type="text" name="user" id="user" value="" placeholder="Enter the username">
+        <br>
+        <label for="password">Password:</label>
+        <br>
+        <input type="text" name="password" id="password" value="" placeholder="StrongPassword...">
+        <br>
+        <input type="submit" value="Submit"/>
+        </fieldset>
+    </form>    
 {% endblock %}
