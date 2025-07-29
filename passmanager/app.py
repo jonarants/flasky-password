@@ -61,10 +61,10 @@ def get_key (password, salt):
     return base64.urlsafe_b64encode(kdf.derive(password.encode()))
 
 @app.route('/register')
-def login():
+def register():
     return render_template('register.html')
 
-@app.route('/logging_in', methods=['POST'])
+@app.route('/register_user', methods=['POST'])
 def logging_in():
     user = request.form['user']
     password = request.form['password']
@@ -90,12 +90,12 @@ def logging_in():
 
 
 
-@app.route('/logintest')
-def logintest():
-    return render_template('login_real.html')
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 
-@app.route('/login_validation', methods=['POST'])
+@app.route('/auth_validation', methods=['POST'])
 def logging_in_test():
     user = request.form['user']
     password = request.form['password']
@@ -111,24 +111,24 @@ def logging_in_test():
         cursor.close()
         if user_record:
             if bcrypt.check_password_hash(user_record['password'], password): #Compara los hashes para la autenticacion
-                return render_template('resultado3.html', mensaje= f"El usuario {user_record['user']} existe y su contraseña es valida")
+                return render_template('result_data', mensaje= f"El usuario {user_record['user']} existe y su contraseña es valida")
             else:
-                return render_template('resultado3.html', mensaje= f"Usuario o contraseña invalidos")
+                return render_template('result_data', mensaje= f"Usuario o contraseña invalidos")
     except Exception as e:
         mensaje = "Usuario no existente:" + str(e)
-        return render_template('resultado2.html', mensaje=mensaje)
+        return render_template('result_data_error.html', mensaje=mensaje)
         
 
-@app.route('/home')
+@app.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/')
+@app.route('/website_info')
 def index():
-    return render_template('index.html')
+    return render_template('website_info.html')
 
-@app.route('/agregar_cita', methods=['POST'])
-def agregar_cita():
+@app.route('/capture_website_data', methods=['POST'])
+def capture_website_data():
     user = request.form['user']
     password = request.form['password']
     websites = request.form['websites']
@@ -140,10 +140,10 @@ def agregar_cita():
         connection.commit()
         cursor.close()
         connection.close()
-        return render_template('resultado.html',websites=websites,user=user,password=password)
+        return render_template('result_data.html',websites=websites,user=user,password=password)
     except Exception as e:
         mensaje="Error al insertar en la base de datos:" + str(e)
-        return render_template('resultado2.html',mensaje=mensaje)
+        return render_template('result data_error.html',mensaje=mensaje)
         
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -1,7 +1,7 @@
 {% extends "home.html" %}
 {% block content %}
 <h2>Login</h2>
-    <form name="login"id="formulario"action="login_validation" method="post">
+    <form name="login"id="formulario"action="auth_validation" method="post">
         <fieldset><legend> Informacion de usuario </legend>
         <label for="user">Usuario:</label>
         <br>
@@ -14,4 +14,4 @@
         <input type="submit" value="Enviar"/>
         </fieldset>
     </form>    
-{% endblock}
+{% endblock %}
