@@ -72,7 +72,6 @@ def logging_in():
     two_factor_enabled = request.form.get('two_factor_enabled')
     two_factor_enabled = (two_factor_enabled == "Enabled")
 
-
     hashed_password = hash_password(password)
     salt = load_or_create_salt("w",user)
     
@@ -119,6 +118,10 @@ def logging_in_test():
         mensaje = "Usuario no existente:" + str(e)
         return render_template('resultado2.html', mensaje=mensaje)
         
+
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
 @app.route('/')
 def index():

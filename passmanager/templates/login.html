@@ -1,8 +1,8 @@
 {% extends "home.html" %}
 {% block content %}
-<h2>Register Form </h2>
-    <form name="login"id="formulario"action="logging_in" method="post">
-        <fieldset><legend> Informacion de usuario a registrar </legend>
+<h2>Login</h2>
+    <form name="login"id="formulario"action="login_validation" method="post">
+        <fieldset><legend> Informacion de usuario </legend>
         <label for="user">Usuario:</label>
         <br>
         <input type="text" name="user" id="user" value="" placeholder="Usuario" required> 
@@ -11,11 +11,7 @@
         <br>
         <input type="password" name="password" id="password" value="" placeholder="Password" required>
         <br>
-        <label for="two_factor_enabled">Habilitar 2FA:</label>
-        <br>
-        <input type="checkbox" name="two_factor_enabled" id="two_factor_enabled" value="Enabled" unchecked>
-        <br>
         <input type="submit" value="Enviar"/>
         </fieldset>
-    </form>
+    </form>    
 {% endblock}
