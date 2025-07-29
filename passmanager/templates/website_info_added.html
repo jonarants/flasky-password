@@ -1,0 +1,21 @@
+{% extends "home.html" %}
+{% block content %}
+    <h2>Website Info</h2> 
+    <h1>{{ mensaje }}</h1>
+    
+    <p>
+        <a href="{{url_for('website_info') }}">Registrar otro sitio web</a>
+    </p>    
+    <p>
+        <a href="{{ url_for('register') }}">Registrar otro usuario</a>
+    </p>
+    <p>
+        <a href="{{ url_for('home') }}">Ir a la página de inicio</a>
+    </p>
+    <p>
+        <a href="{{ url_for('login') }}">Iniciar Sesión</a>
+    </p>
+    <p>
+        <a href="{{ url_for('show_tables') }}">Mostrar sitios</a>
+    </p>
+{% endblock %}
