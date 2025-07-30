@@ -11,6 +11,16 @@ app = Flask(__name__)
 bcrypt = Bcrypt (app)
 
 
+def encrypt_password(key, password):
+    fernet = Fernet(key)
+    return fernet.encrypt(password.encode())
+
+def decrypt_password(key, token):
+    fernet = Fernet(key)
+    return fernet.decrypt(token).decode()
+
+
+
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY')
 def get_db_config():
     SECRETS_PATH =  '/run/secrets'
@@ -100,8 +110,9 @@ def login():
 def auth_validation():
     user = request.form['user']
     password = request.form['password']
-    salt = load_or_create_salt("r",user)
-    key = get_key (password, salt)
+    #salt = load_or_create_salt("r",user)
+     
+    #key = get_key (password, salt)
     try: 
         config = get_db_config()
         connection = mysql.connector.connect(**config)
@@ -133,6 +144,7 @@ def capture_website_data():
     user = request.form['user']
     password = request.form['password']
     website = request.form['website']
+
     try:
         config = get_db_config()
         connection = mysql.connector.connect(**config)
