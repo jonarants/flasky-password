@@ -87,5 +87,5 @@ secrets:
     file: ./secrets/MYSQL_ROOT_PASSWORD_FILE.txt
   mysql-admin-mysql-temp:
     file: ./secrets/MYSQL_ADMIN_TEMP.txt
-  mysql-salt::
+  mysql-salt:
     file: ./secrets/MYSQL_SALT.txt
