@@ -1,21 +1,25 @@
-{% extends "home.html" %}
+{% extends "dashboard.html" %}
 {% block content %}
     <h2>Website Info</h2> 
     <h1>{{ mensaje }}</h1>
     
     <p>
-        <a href="{{url_for('website_info') }}">Registrar otro sitio web</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    </p>
+    <p>
+        <a href="{{ url_for('login') }}">Sign in with another user</a>
+    </p>
+    <p>
+        <a href="{{ url_for('show_tables') }}">Show passwords</a>
+    </p>
+    <p>
+        <a href="{{ url_for('register') }}">Add another user to the manager</a>
+    </p>
+    <p>
+        <a href="{{url_for('website_info') }}">Add another site to the manager</a>
+    </p>
+    <p>
+        <a href="{{url_for('logout') }}">Logout</a>
     </p>    
-    <p>
-        <a href="{{ url_for('register') }}">Registrar otro usuario</a>
-    </p>
-    <p>
-        <a href="{{ url_for('home') }}">Ir a la página de inicio</a>
-    </p>
-    <p>
-        <a href="{{ url_for('login') }}">Iniciar Sesión</a>
-    </p>
-    <p>
-        <a href="{{ url_for('show_tables') }}">Mostrar sitios</a>
-    </p>
+
 {% endblock %}

@@ -25,19 +25,19 @@ CREATE TABLE IF NOT EXISTS users (
     encryption_salt BLOB NOT NULL
 );
 
-INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, encryption_salt)
-VALUES (
+CREATE TABLE IF NOT EXISTS websites_info (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    website VARCHAR(255) NOT NULL, 
+    user VARCHAR(255) NOT NULL,     
+    password BLOB NOT NULL,
+    user_id VARCHAR(255) NOT NULL  
+);
+
+INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, encryption_salt) VALUES (
     'admin',
     '${ADMIN_HASH}',
     NULL,
     FALSE,
     X'${SALT_HASH}'
-);
-
-CREATE TABLE IF NOT EXISTS websites_info (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    website VARCHAR(255) NOT NULL, 
-    user VARCHAR(255) NOT NULL,     
-    password VARCHAR(255) NOT NULL  
 );
 EOSQL

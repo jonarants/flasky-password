@@ -1,4 +1,4 @@
-{% extends "home.html" %}
+{% extends "dashboard.html" %}
 {% block content %}
 <h1> Websites </h1>
 <table>
@@ -8,6 +8,7 @@
             <th>Website</th>
             <th>Username</th>
             <th>Password</th>
+            <th>Created by</th>
         </tr>
     </thead>
     <tbody>
@@ -16,7 +17,8 @@
             <td>{{ entry['id'] }}</td> 
             <td>{{ entry['website'] }}</td> 
             <td>{{ entry['user'] }}</td> 
-            <td>{{ entry['password'] }}</td>   
+            <td>{{ entry['password'] }}</td>
+            <td>{{ entry['user_id'] }}</td>   
         </tr>
         {% endfor %} 
     </tbody>
