@@ -145,12 +145,12 @@ def login_validation():
                 memcached_client.set(f"fernet_key:{session['user']}", key, expire=300)
                 return redirect(url_for('dashboard'))
             else:
-                return render_template('login_error.html', mensaje= f"Usuario o contraseña invalidos")
+                return render_template('login_error.html', message= f"Usuario o contraseña invalidos")
         else:
-            return render_template('login_error.html', mensaje= f"Usuario o contraseña invalidos")    
+            return render_template('login_error.html', message= f"Usuario o contraseña invalidos")    
     except Exception as e:
-        mensaje = "Error:" + str(e)
-        return render_template('login_error.html', mensaje=mensaje)
+        message = "Error:" + str(e)
+        return render_template('login_error.html', message=message)
     finally:
         close_db_connection(connection, cursor) 
 
@@ -187,11 +187,11 @@ def register_user():
         connection, cursor = get_db_connection()
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,encryption_salt) VALUES (%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,salt))
         connection.commit()
-        mensaje = f"The {user} was created correctly"
-        return render_template ('result_data.html', mensaje=mensaje)
+        message = f"The {user} was created correctly"
+        return render_template ('result_data.html', message=message)
     except Exception as e:
-        mensaje = f"Error al insertar a la base de datos:" + str(e)
-        return render_template('result_data.html', mensaje=mensaje)
+        message = f"Error al insertar a la base de datos:" + str(e)
+        return render_template('result_data.html', message=message)
     finally:
       close_db_connection(connection, cursor)
 
@@ -218,11 +218,11 @@ def capture_website_data():
         connection, cursor = get_db_connection()
         cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
         connection.commit()
-        mensaje=f"The website for {website} was added successfully"
-        return render_template('website_info_added.html',mensaje=mensaje)
+        message=f"The website for {website} was added successfully"
+        return render_template('website_info_added.html',message=message)
     except Exception as e:
-        mensaje="Error when trying to insert the information into the table:" + str(e)
-        return render_template('result data_error.html',mensaje=mensaje)
+        message="Error when trying to insert the information into the table:" + str(e)
+        return render_template('result_data.html',message=message)
     finally:
         close_db_connection(connection, cursor)
 
@@ -236,13 +236,14 @@ def show_tables():
     websites_decrypted_data = []
     try:
         connection, cursor = get_db_connection()
-        cursor.execute("SELECT * FROM websites_info WHERE user = %s",(username_logged_in,))")
+        cursor.execute("SELECT * FROM websites_info WHERE user_id = %s",(username_logged_in,))
         websites = cursor.fetchall() 
         for entry in websites:
             if entry['password']:
                 try:
                     decrypted_password = decrypt_password(encryption_key,entry['password'])
                     websites_decrypted_data.append({
+                        'id': entry['id'],
                         'website': entry['website'],
                         'user': entry['user'],
                         'password': decrypted_password,
@@ -250,13 +251,15 @@ def show_tables():
                     })
                 except Exception as decryp_error:
                     websites_decrypted_data.append({
+                        'id': entry['id'],
                         'website': entry['website'],
                         'user': entry['user'],
-                        'password': "[Error decrypting password or incorrect key]", # Mensaje para el usuario
+                        'password': "[Error decrypting password or incorrect key]", # message para el usuario
                         'user_id': entry['user_id']
                     })
             else:
                 websites_decrypted_data.append({
+                    'id': entry['id'],
                     'website': entry['website'],
                     'user': entry['user'],
                     'password': "[No password stored]",
@@ -265,8 +268,8 @@ def show_tables():
 
         return render_template('tables.html', websites=websites_decrypted_data)
     except Exception as e:
-        mensaje="Error al conectar a las base de datos" +str(e)
-        return render_template('result data_error.html',mensaje=mensaje)
+        message="Error al conectar a las base de datos" +str(e)
+        return render_template('result_data.html',message=message)
     finally:
         close_db_connection(connection, cursor)
 
