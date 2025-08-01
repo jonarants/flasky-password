@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Flask, render_template, request
 from flask_bcrypt import Bcrypt
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -11,9 +12,11 @@ from functools import wraps
 from flask import session, redirect, url_for
 from pymemcache.client import base
 
+
 app = Flask(__name__)
 bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
+
 
 
 def read_secret(secret_name):
@@ -24,7 +27,20 @@ def read_secret(secret_name):
 
 app.config['SECRET_KEY'] = read_secret('flask_secret_key_secret')
 
-# Definicion del decorador
+# Manejo de session timeout
+
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=10)
+
+# Definicion del decorador befor_request que se usa para el timeout de sesiones
+
+@app.before_request
+def before_request():
+    if 'user' in session:
+        session.permanent = True
+        session['user']
+
+
+# Definicion del decorador de login necesario
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -49,6 +65,8 @@ def get_db_connection():
     cursor = connection.cursor(dictionary=True)
     return connection, cursor
 
+# Metodo para cerrar conexión a la BD
+
 def close_db_connection(connection, cursor):
     if cursor:
         try:
@@ -63,47 +81,54 @@ def close_db_connection(connection, cursor):
 
 # Metodos de hash y encriptado
 
-
+# Hash para el password
 def hash_password(password):
     return bcrypt.generate_password_hash(password, 12).decode('utf-8')
 
+
+# Funcion para la creacion de salt
 def create_salt():
     salt = os.urandom(16)
     return salt
 
+# Genera la clave de cifrado
 def get_key (password, salt):
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
         salt=salt,
-        iterations=200_000,
+        iterations=480_000, # Ideal para una clave más compleja de encriptacion
         backend=default_backend()
     )
     return base64.urlsafe_b64encode(kdf.derive(password.encode()))
 
+# Metodo para cifrar el password
+
 def encrypt_password(key, password):
     fernet = Fernet(key)
     return fernet.encrypt(password.encode())
+
+# Metodo para descifrar el password
 
 def decrypt_password(key, token):
     fernet = Fernet(key)
     return fernet.decrypt(token).decode()
 
 # Metodos de decoradores para rutas
-# Ruta principal
-@app.route('/home')
-def home():
-    return render_template('home.html')
 
-# Ruta de login
+# Ruta del dashboard
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
+# Ruta de login/validacion del login/ruta principal
 @app.route('/')
 def login():
-
     return render_template('login.html')
 
-
-@app.route('/auth_validation', methods=['POST'])
-def auth_validation():
+@app.route('/login_validation', methods=['POST'])
+def login_validation():
     user = request.form['user']
     password = request.form['password']
 
@@ -114,18 +139,31 @@ def auth_validation():
         if user_record:
             if bcrypt.check_password_hash(user_record['password'], password): #Compara los hashes para la autenticacion
                 session['user'] = user_record['user']
+                session.permanent = True
                 salt = user_record['encryption_salt']
                 key = get_key(password, salt)
-                memcached_client.set(f"fernet_key:{user_record['user']}", key, expire=300)
-
-                return redirect(url_for('home'))
+                memcached_client.set(f"fernet_key:{session['user']}", key, expire=300)
+                return redirect(url_for('dashboard'))
             else:
-                return render_template('result_data.html', mensaje= f"Usuario o contraseña invalidos")
+                return render_template('login_error.html', mensaje= f"Usuario o contraseña invalidos")
+        else:
+            return render_template('login_error.html', mensaje= f"Usuario o contraseña invalidos")    
     except Exception as e:
-        mensaje = "Usuario no existente:" + str(e)
-        return render_template('result_data_error.html', mensaje=mensaje)
+        mensaje = "Error:" + str(e)
+        return render_template('login_error.html', mensaje=mensaje)
     finally:
         close_db_connection(connection, cursor) 
+
+# Metodo de logout
+
+@app.route('/logout')
+def logout():
+    if 'user' in session:
+        memcached_client.delete(f"fernet_key:{session['user']}")
+    session.pop('user', None)
+    session.clear()
+
+    return render_template('logout.html')
 
 # Ruta de registro
 @app.route('/register')
@@ -134,6 +172,7 @@ def register():
     return render_template('register.html')
 
 @app.route('/register_user', methods=['POST'])
+@login_required
 def register_user():
 
     user = request.form['user']
@@ -149,12 +188,14 @@ def register_user():
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,encryption_salt) VALUES (%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,salt))
         connection.commit()
         mensaje = f"The {user} was created correctly"
-        return render_template ('result_data.html' ,mensaje=mensaje)
+        return render_template ('result_data.html', mensaje=mensaje)
     except Exception as e:
         mensaje = f"Error al insertar a la base de datos:" + str(e)
-        return render_template('result_data_error.html', mensaje=mensaje)
+        return render_template('result_data.html', mensaje=mensaje)
     finally:
       close_db_connection(connection, cursor)
+
+
 
 # Captura de informacion de sitios web
 @app.route('/website_info')
@@ -175,12 +216,12 @@ def capture_website_data():
     password = encrypt_password(encryption_key,password)
     try:
         connection, cursor = get_db_connection()
-        cursor.execute('INSERT INTO websites_info (website,user,password) VALUES(%s,%s,%s)',(website, user,password))
+        cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
         connection.commit()
-        mensaje=f"La información para el sitio {website} fue agregada al password manager"
+        mensaje=f"The website for {website} was added successfully"
         return render_template('website_info_added.html',mensaje=mensaje)
     except Exception as e:
-        mensaje="Error al insertar en la base de datos:" + str(e)
+        mensaje="Error when trying to insert the information into the table:" + str(e)
         return render_template('result data_error.html',mensaje=mensaje)
     finally:
         close_db_connection(connection, cursor)
@@ -195,7 +236,7 @@ def show_tables():
     websites_decrypted_data = []
     try:
         connection, cursor = get_db_connection()
-        cursor.execute("SELECT * FROM websites_info")
+        cursor.execute("SELECT * FROM websites_info WHERE user = %s",(username_logged_in,))")
         websites = cursor.fetchall() 
         for entry in websites:
             if entry['password']:
@@ -204,19 +245,22 @@ def show_tables():
                     websites_decrypted_data.append({
                         'website': entry['website'],
                         'user': entry['user'],
-                        'password': decrypted_password
+                        'password': decrypted_password,
+                        'user_id': entry['user_id']
                     })
                 except Exception as decryp_error:
                     websites_decrypted_data.append({
                         'website': entry['website'],
                         'user': entry['user'],
-                        'password': "[Error decrypting password or incorrect key]" # Mensaje para el usuario
+                        'password': "[Error decrypting password or incorrect key]", # Mensaje para el usuario
+                        'user_id': entry['user_id']
                     })
             else:
                 websites_decrypted_data.append({
                     'website': entry['website'],
                     'user': entry['user'],
-                    'password': "[No password stored]"
+                    'password': "[No password stored]",
+                    'user_id': entry['user_id']
                 })
 
         return render_template('tables.html', websites=websites_decrypted_data)
