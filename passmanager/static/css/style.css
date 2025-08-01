@@ -1,3 +1,11 @@
+/* Reset básico para box-sizing */
+html {
+    box-sizing: border-box;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
 /* Paleta de Colores Morados */
 :root {
     --primary-purple: #6A057F; /* Un morado oscuro y profundo */
@@ -7,7 +15,7 @@
     --text-color-dark: #333333; /* Texto oscuro para fondos claros */
     --background-light: #F2F2F2; /* Fondo general claro */
     --border-color: #B28FCE;   /* Color para bordes sutiles */
-    --error-red: #D32F2F;      /* Rojo para mensajes de error */
+    --error-red: #D32F2F;      /* Rojo para messages de error */
 }
 
 /* Base HTML y Tipografía */
@@ -19,25 +27,18 @@ body {
     color: var(--text-color-dark);
     line-height: 1.6;
     min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura de la ventana */
-    display: flex; /* Añadimos flexbox para centrar todo el contenido del body */
-    flex-direction: column; /* Apila elementos verticalmente */
-    align-items: center; /* Centra horizontalmente el contenido del body */
-    justify-content: center; /* Centra verticalmente el contenido del body */
-    padding: 20px; /* Padding general para evitar que el contenido toque los bordes */
-    box-sizing: border-box; /* Asegura que el padding no añada al ancho/alto */
+    display: flex; /* Usamos flex para controlar el flujo general */
+    flex-direction: column; /* Apila elementos verticalmente: header, main, (footer) */
+    box-sizing: border-box; /* Asegura que padding no añada ancho */
 }
 
-/* Header y Navegación (Estos estilos solo aplicarán si hay un <header> y <nav> en la página) */
+/* Header y Navegación */
 header {
     background-color: var(--primary-purple);
     color: var(--text-color-light);
-    padding: 1rem 0;
+    padding: 1rem 20px; /* Añadido padding horizontal aquí */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     width: 100%;
-    /* Aseguramos que el header no se vea afectado por el centrado del body en login.html */
-    position: absolute; /* Saca el header del flujo normal para que no se centre */
-    top: 0;
-    left: 0;
 }
 
 nav ul {
@@ -47,6 +48,8 @@ nav ul {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    max-width: 960px; /* Limita el ancho del contenido de la navegación */
+    margin: 0 auto; /* Centra la navegación dentro del header */
 }
 
 nav ul li {
@@ -68,28 +71,68 @@ nav ul li a:focus {
     color: var(--primary-purple);
 }
 
-/* Título H2 para la página de login (o cualquier H2 sin otra clase específica) */
-h2 {
-    color: var(--primary-purple);
-    margin-bottom: 25px; /* Espacio debajo del título */
-    font-size: 2.2em;
-    text-align: center;
-    width: 100%; /* Ocupa el ancho para el centrado */
-    max-width: 400px; /* Alineado con el ancho del formulario */
+/* Contenedor Principal para Dashboard y Páginas con Contenido Estructurado */
+.container {
+    flex-grow: 1; /* Permite que el contenedor crezca y ocupe el espacio disponible */
+    max-width: 960px; /* Ancho máximo para el contenido */
+    margin: 20px auto; /* Centrar el contenedor horizontalmente y darle espacio superior/inferior */
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    /* Para la imagen del gato, ya que está dentro de este .container en login.html */
+    display: flex;
+    flex-direction: column; /* Apila el contenido del container (si hay varios) */
+    align-items: center; /* Centra horizontalmente los ítems (como la imagen) */
+    justify-content: center; /* Centra verticalmente si hay espacio extra */
 }
 
-/* Estilos para formularios (aplicables a login, register, website_info) */
-form {
-    background-color: #ffffff;
+/* --- ESTILOS PARA CENTRAR FORMULARIOS Y MENSAJES (Login, Register, Result, Error, etc.) --- */
+form, .message-box {
+    margin: 50px auto; /* Centrar horizontalmente y dar espacio vertical desde los bordes del body/header */
+    max-width: 400px;  /* Ancho máximo para formularios y mensajes */
+    width: 100%;       /* Ocupar el 100% del espacio disponible hasta el max-width */
+    box-sizing: border-box; /* Asegura que padding no añada ancho */
     padding: 25px;
     border-radius: 8px;
+    background-color: #ffffff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ocupar el 100% del ancho disponible en su contenedor */
-    max-width: 400px; /* Ancho máximo para el formulario */
-    box-sizing: border-box;
-    margin-bottom: 20px; /* Espacio debajo del formulario */
 }
 
+/* Ajustes específicos para el mensaje de error si está dentro de un contenedor o directamente en el body */
+.message-box {
+    margin-top: 20px;
+    text-align: center;
+}
+.message-box.error-message {
+    background-color: #FFEBEE;
+    color: var(--error-red);
+    border: 1px solid var(--error-red);
+}
+
+.message-box a {
+    color: var(--primary-purple);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.message-box a:hover {
+    text-decoration: underline;
+}
+
+
+/* Título H2 (aplicable a login, register, etc.) */
+h2 {
+    color: var(--primary-purple);
+    margin: 25px auto; /* Centrar y dar margen vertical */
+    font-size: 2.2em;
+    text-align: center;
+    width: 100%;
+    max-width: 400px; /* Alineado con el ancho del formulario/contenedor */
+}
+
+/* Estilos para campos de formulario */
 form label {
     display: block;
     margin-bottom: 8px;
@@ -108,7 +151,7 @@ form input[type="email"] {
     box-sizing: border-box;
 }
 
-form input[type="submit"] { /* Solo para input type submit */
+form input[type="submit"] {
     background-color: var(--primary-purple);
     color: var(--text-color-light);
     padding: 12px 20px;
@@ -130,7 +173,6 @@ fieldset {
     border: 1px solid var(--border-color);
     padding: 20px;
     border-radius: 8px;
-    /* margin-bottom: 20px; ya no necesario si el form tiene margin-bottom */
 }
 
 legend {
@@ -139,47 +181,8 @@ legend {
     padding: 0 10px;
 }
 
-/* Contenedor Principal para contenido general o para el bloque heredado (ej. error messages) */
-.container {
-    background-color: #ffffff; /* Fondo blanco para el contenido si no es formulario */
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px; /* Mismo ancho que el formulario para alineación */
-    box-sizing: border-box;
-}
 
-/* Estilos para mensajes (general, y específicos de error) */
-.message-box { /* Asumimos que los mensajes de error tendrán esta clase */
-    padding: 20px;
-    margin-top: 20px; /* Espacio superior si no está dentro del formulario principal */
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px; /* Para que los mensajes también tengan un ancho controlado */
-    box-sizing: border-box;
-    /* Los colores base los dará la clase específica o el contenedor padre si aplica */
-}
-
-.message-box.error-message { /* Estilo específico para mensajes de error */
-    background-color: #FFEBEE; /* Fondo rojo claro */
-    color: var(--error-red); /* Texto rojo oscuro */
-    border: 1px solid var(--error-red);
-}
-
-.message-box a {
-    color: var(--primary-purple); /* Sigue usando el morado para los enlaces */
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.message-box a:hover {
-    text-decoration: underline;
-}
-
-/* Estilos para tablas (show_tables) - Solo aplicarán si hay una tabla en el HTML */
+/* Estilos para tablas (show_tables) */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -207,21 +210,57 @@ table tr:hover {
     background-color: #f0f0f0;
 }
 
-/* Estilos para encabezados H1, H2, etc. (genéricos, pero H2 ya tiene su estilo arriba) */
-h1, h3 { /* H2 se maneja específicamente arriba */
+/* Estilos para encabezados H1, H3 (H2 tiene su estilo arriba) */
+h1, h3 {
     color: var(--primary-purple);
     text-align: center;
     margin-bottom: 20px;
 }
 
+/* Estilos para todas las imágenes por defecto */
+img {
+    max-width: 100%; /* Asegura que la imagen no desborde su contenedor */
+    height: auto;    /* Mantiene la proporción de la imagen */
+    display: block;  /* Elimina el espacio extra debajo de las imágenes */
+    margin: 20px auto; /* Centra la imagen y le da margen vertical */
+    border-radius: 8px; /* Bordes redondeados para la imagen */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra para que se vea más integrada */
+}
+
+/* --- ESTILOS PARA EL FOOTER --- */
+footer {
+    background-color: var(--primary-purple);
+    color: var(--text-color-light);
+    padding: 1.5rem 20px; /* padding horizontal añadido */
+    text-align: center;
+    font-size: 0.9em;
+    margin-top: auto; /* Empuja el footer hacia la parte inferior del flex container (body) */
+    width: 100%; /* Asegura que ocupe todo el ancho */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Sombra superior sutil */
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+footer a {
+    color: var(--accent-color); /* Un color que contraste para los enlaces del footer */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--text-color-light);
+    text-decoration: underline;
+}
+
 /* Responsive Design (para móviles) */
 @media (max-width: 768px) {
-    /* Ajustes para el body en móviles */
     body {
-        padding: 10px; /* Reduce el padding general en móviles */
+        padding: 0; /* Eliminado padding lateral del body en móviles */
     }
 
-    /* Estilos para navegación (si dashboard.html la tiene y es responsive) */
     nav ul {
         flex-direction: column;
         align-items: center;
@@ -231,19 +270,18 @@ h1, h3 { /* H2 se maneja específicamente arriba */
         margin: 10px 0;
     }
 
-    /* Ajustes para el título H2 */
-    h2 {
-        font-size: 1.8em; /* Ajusta el tamaño del título en móviles */
+    h2 { /* Ajuste del título H2 en móviles */
+        font-size: 1.8em;
         margin-bottom: 15px;
     }
 
-    /* Estilos para formularios y contenedores (aplicarán a login y otros) */
     form, .container, .message-box {
-        padding: 20px; /* Mantener un buen padding interno */
-        max-width: 95%; /* Ocupar casi todo el ancho disponible */
+        padding: 20px;
+        max-width: 95%;
+        margin: 10px auto; /* Ajuste de margen para móviles */
     }
 
-    /* Estilos de tabla responsive (mantienen la funcionalidad para show_tables) */
+    /* Estilos de tabla responsive */
     table, thead, tbody, th, td, tr {
         display: block;
     }
@@ -278,7 +316,18 @@ h1, h3 { /* H2 se maneja específicamente arriba */
         color: var(--primary-purple);
     }
 
-    table td:nth-of-type(1):before { content: "Website:"; }
-    table td:nth-of-type(2):before { content: "User:"; }
-    table td:nth-of-type(3):before { content: "Password:"; }
+    table td:nth-of-type(1):before { content: "ID:"; }
+    table td:nth-of-type(2):before { content: "Website:"; }
+    table td:nth-of-type(3):before { content: "Username:"; }
+    table td:nth-of-type(4):before { content: "Password:"; }
+    table td:nth-of-type(5):before { content: "Created by:"; }
+
+    header {
+        padding: 1rem 15px; /* Ajuste el padding del header para móviles */
+    }
+
+    footer {
+        padding: 1rem 15px; /* Ajuste el padding del footer para móviles */
+        font-size: 0.8em;
+    }
 }
