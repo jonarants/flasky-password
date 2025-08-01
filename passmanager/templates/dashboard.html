@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flasky Password</title>
+    <title>Flasky Password Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
         <nav>
             <ul>
-                <li><a href="{{url_for('home')}}">Home</a></li>
-                <li><a href="{{url_for('register')}}">Register</a></li>
+                <li><a href="{{url_for('dashboard')}}">Dashboard</a></li>
+                <li><a href="{{url_for('register')}}">Register a user</a></li>
                 <li><a href="{{url_for('login')}}">Login</a></li>
                 <li><a href="{{url_for('website_info')}}">Save sites Information</a></li>
                 <li><a href="{{url_for('logout')}}">logout</a></li>                
