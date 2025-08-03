@@ -1,8 +1,7 @@
 import mysql.connector
 
 class DisconnectDB:
-
-    
+        
     def close_connection_cursor(self,connection, cursor):
         if cursor:
             try:
