@@ -1,25 +1,30 @@
 from datetime import timedelta
 from flask import Flask, render_template, request
-from flask_bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt #
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet #
 import mysql.connector
 import base64
 import os
 from functools import wraps
 from flask import session, redirect, url_for
 from pymemcache.client import base
+
+# Refactors
 from secrets.read_secrets import ReadSecrets
 from db.db_connector import DBConfigLoader
 from db.db_disconnect import DisconnectDB
+from crypto.crypto_utils import CryptoUtils
 
 read_secrets = ReadSecrets()
 db_config_loader = DBConfigLoader(read_secrets)
 disconnect_db = DisconnectDB()
+crypto_utils = CryptoUtils()
 
 app = Flask(__name__)
+crypto_utils.init_app(app)
 bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
 app.config['SECRET_KEY'] = read_secrets.get_secret('flask_secret_key_secret') # Lectura del secret key
@@ -41,41 +46,6 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
-# Metodos de hash y encriptado
-
-# Hash para el password
-def hash_password(password):
-    return bcrypt.generate_password_hash(password, 12).decode('utf-8')
-
-
-# Funcion para la creacion de salt
-def create_salt():
-    salt = os.urandom(16)
-    return salt
-
-# Genera la clave de cifrado
-def get_key (password, salt):
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=480_000, # Ideal para una clave más compleja de encriptacion
-        backend=default_backend()
-    )
-    return base64.urlsafe_b64encode(kdf.derive(password.encode()))
-
-# Metodo para cifrar el password
-
-def encrypt_password(key, password):
-    fernet = Fernet(key)
-    return fernet.encrypt(password.encode())
-
-# Metodo para descifrar el password
-
-def decrypt_password(key, token):
-    fernet = Fernet(key)
-    return fernet.decrypt(token).decode()
 
 # Metodos de decoradores para rutas
 
@@ -100,11 +70,11 @@ def login_validation():
         cursor.execute("SELECT * FROM users WHERE user = %s",(user,))
         user_record = cursor.fetchone()
         if user_record:
-            if bcrypt.check_password_hash(user_record['password'], password): #Compara los hashes para la autenticacion
+            if crypto_utils.validate_password(user_record['password'], password): #Compara los hashes para la autenticacion
                 session['user'] = user_record['user']
                 session.permanent = True
                 salt = user_record['encryption_salt']
-                key = get_key(password, salt)
+                key = crypto_utils.get_key(password, salt)
                 memcached_client.set(f"fernet_key:{session['user']}", key, expire=300)
                 return redirect(url_for('dashboard'))
             else:
@@ -143,8 +113,8 @@ def register_user():
     two_factor_secret = "placeholder data"#request.form['two_factor_secret']
     two_factor_enabled = request.form.get('two_factor_enabled')
     two_factor_enabled = (two_factor_enabled == "Enabled")
-    hashed_password = hash_password(password)
-    salt = create_salt()
+    hashed_password = crypto_utils.hash_password(password)
+    salt = crypto_utils.create_salt()
     #is_valid = bcrypt.check_password_hash(hashed_password, password)
     try: 
         connection, cursor = db_config_loader.create_connection_cursor()
@@ -176,7 +146,7 @@ def capture_website_data():
 
     memcached_key_name= f"fernet_key:{username_logged_in}"
     encryption_key = memcached_client.get(memcached_key_name)
-    password = encrypt_password(encryption_key,password)
+    password = crypto_utils.encrypt_password(encryption_key,password)
     try:
         connection, cursor = db_config_loader.create_connection_cursor()
         cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
@@ -204,7 +174,7 @@ def show_tables():
         for entry in websites:
             if entry['password']:
                 try:
-                    decrypted_password = decrypt_password(encryption_key,entry['password'])
+                    decrypted_password = crypto_utils.decrypt_password(encryption_key,entry['password'])
                     websites_decrypted_data.append({
                         'id': entry['id'],
                         'website': entry['website'],

@@ -2,6 +2,7 @@ from secrets.read_secrets import ReadSecrets
 import mysql.connector
 
 class DBConfigLoader:
+    
     def __init__(self, read_secrets : ReadSecrets):
         if not isinstance(read_secrets, ReadSecrets):
             raise TypeError("read_secrets must be an instance of ReadSecrets.")
