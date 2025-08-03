@@ -11,25 +11,19 @@ import os
 from functools import wraps
 from flask import session, redirect, url_for
 from pymemcache.client import base
+from secrets.read_secrets import ReadSecrets
+from db.db_connector import DBConfigLoader
+from db.db_disconnect import DisconnectDB
 
+read_secrets = ReadSecrets()
+db_config_loader = DBConfigLoader(read_secrets)
+disconnect_db = DisconnectDB()
 
 app = Flask(__name__)
 bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
-
-
-
-def read_secret(secret_name):
-     SECRETS_PATH =  '/run/secrets'
-     secret_file_path = os.path.join(SECRETS_PATH, secret_name)
-     with open(secret_file_path, 'r') as f:
-         return f.read().strip()
-
-app.config['SECRET_KEY'] = read_secret('flask_secret_key_secret')
-
-# Manejo de session timeout
-
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=10)
+app.config['SECRET_KEY'] = read_secrets.get_secret('flask_secret_key_secret') # Lectura del secret key
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=10) # Manejo de session timeout
 
 # Definicion del decorador befor_request que se usa para el timeout de sesiones
 
@@ -39,7 +33,6 @@ def before_request():
         session.permanent = True
         session['user']
 
-
 # Definicion del decorador de login necesario
 def login_required(f):
     @wraps(f)
@@ -48,36 +41,6 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
-
-# Meotodos para las conexiones a la base de datos
-
-def get_db_connection():    
-    config = {
-        'user': read_secret('mysql_user_secret'),
-        'password': read_secret('mysql_password_secret'),
-        'host': read_secret('mysql_host_secret'),
-        'port': read_secret('mysql_port_secret'),
-        'database': read_secret('mysql_database_secret')
-    }
-
-    connection = mysql.connector.connect(**config)
-    cursor = connection.cursor(dictionary=True)
-    return connection, cursor
-
-# Metodo para cerrar conexión a la BD
-
-def close_db_connection(connection, cursor):
-    if cursor:
-        try:
-            cursor.close()
-        except Exception as e:
-            print(f"Error al cerrar el cursor {e}")
-    if connection:
-        try:
-            connection.close()
-        except Exception as e:
-            print(f"Error al cerrar la conexión DB: {e}")
 
 # Metodos de hash y encriptado
 
@@ -133,7 +96,7 @@ def login_validation():
     password = request.form['password']
 
     try: 
-        connection, cursor = get_db_connection()
+        connection, cursor = db_config_loader.create_connection_cursor()
         cursor.execute("SELECT * FROM users WHERE user = %s",(user,))
         user_record = cursor.fetchone()
         if user_record:
@@ -152,7 +115,7 @@ def login_validation():
         message = "Error:" + str(e)
         return render_template('login_error.html', message=message)
     finally:
-        close_db_connection(connection, cursor) 
+        disconnect_db.close_connection_cursor(connection, cursor) 
 
 # Metodo de logout
 
@@ -184,7 +147,7 @@ def register_user():
     salt = create_salt()
     #is_valid = bcrypt.check_password_hash(hashed_password, password)
     try: 
-        connection, cursor = get_db_connection()
+        connection, cursor = db_config_loader.create_connection_cursor()
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,encryption_salt) VALUES (%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,salt))
         connection.commit()
         message = f"The {user} was created correctly"
@@ -193,7 +156,7 @@ def register_user():
         message = f"Error al insertar a la base de datos:" + str(e)
         return render_template('result_data.html', message=message)
     finally:
-      close_db_connection(connection, cursor)
+      disconnect_db.close_connection_cursor(connection, cursor)
 
 
 
@@ -215,7 +178,7 @@ def capture_website_data():
     encryption_key = memcached_client.get(memcached_key_name)
     password = encrypt_password(encryption_key,password)
     try:
-        connection, cursor = get_db_connection()
+        connection, cursor = db_config_loader.create_connection_cursor()
         cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
         connection.commit()
         message=f"The website for {website} was added successfully"
@@ -224,7 +187,7 @@ def capture_website_data():
         message="Error when trying to insert the information into the table:" + str(e)
         return render_template('result_data.html',message=message)
     finally:
-        close_db_connection(connection, cursor)
+        disconnect_db.close_connection_cursor(connection, cursor)
 
 # Muestra las tablas de información desencriptada
 @app.route('/show_tables')
@@ -235,7 +198,7 @@ def show_tables():
     encryption_key = memcached_client.get(memcached_key_name)
     websites_decrypted_data = []
     try:
-        connection, cursor = get_db_connection()
+        connection, cursor = db_config_loader.create_connection_cursor()
         cursor.execute("SELECT * FROM websites_info WHERE user_id = %s",(username_logged_in,))
         websites = cursor.fetchall() 
         for entry in websites:
@@ -271,8 +234,7 @@ def show_tables():
         message="Error al conectar a las base de datos" +str(e)
         return render_template('result_data.html',message=message)
     finally:
-        close_db_connection(connection, cursor)
-
+        disconnect_db.close_connection_cursor(connection, cursor)
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
