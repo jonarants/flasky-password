@@ -1,5 +1,5 @@
 from datetime import timedelta
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 from flask_bcrypt import Bcrypt #
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
@@ -9,7 +9,6 @@ import mysql.connector
 import base64
 import os
 from functools import wraps
-from flask import session, redirect, url_for
 from pymemcache.client import base
 
 # Refactors
@@ -26,7 +25,7 @@ crypto_utils.init_app(app)
 bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
 app.config['SECRET_KEY'] = read_secrets.get_secret('flask_secret_key_secret') # Lectura del secret key
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=10) # Manejo de session timeout
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=60) # Manejo de session timeout
 
 # Definicion del decorador befor_request que se usa para el timeout de sesiones
 
@@ -130,6 +129,48 @@ def register_user():
     finally:
       db_utils.disconnect(connection, cursor)
 
+# Administracion de usuarios
+
+@app.route('/manage_users')
+@login_required
+def manage_users():
+    try:
+        connection, cursor = db_utils.connect()
+        cursor.execute("SELECT id, user FROM users")
+        users = cursor.fetchall()
+    except Exception as e:
+        print(f"Not valid information found error {e}")
+    finally:
+        db_utils.disconnect(connection, cursor)
+            
+    return render_template('manage_users.html', users = users)
+
+@app.route('/delete_selected_users', methods=['POST'])
+@login_required
+def delete_selected_users():
+    if request.method == 'POST':
+        users_to_delete_ids = request.form.getlist('delete_user_ids')
+        if not users_to_delete_ids:
+            flash("No users selected for deletion.", 'info')
+            return redirect(url_for('manage_users'))
+        try:
+            connection, cursor = db_utils.connect()
+            user_list = ','.join(['%s'] * len (users_to_delete_ids))
+            sql_query = f"DELETE FROM users WHERE user IN ({user_list})"
+            cursor.execute(sql_query, tuple(users_to_delete_ids))
+            sql_query = f"DELETE FROM websites_info WHERE user_id IN ({user_list})"
+            cursor.execute(sql_query, tuple(users_to_delete_ids))
+            connection.commit()
+            flash(f"Successfully deleted {len(users_to_delete_ids)} user(s).", 'success')
+        except Exception as e:
+            flash(f"Error deleting users: {e}","error")
+            if connection:
+                connection.rollback()
+            print(f"Error al eliminar usuarios {e}")
+        finally:
+            if connection and cursor:
+                db_utils.disconnect(connection, cursor)    
+    return redirect(url_for('manage_users'))
 
 
 # Captura de informacion de sitios web
@@ -201,7 +242,7 @@ def show_tables():
                     'user_id': entry['user_id']
                 })
 
-        return render_template('tables.html', websites=websites_decrypted_data)
+        return render_template('show_tables.html', websites=websites_decrypted_data)
     except Exception as e:
         message="Error al conectar a las base de datos" +str(e)
         return render_template('result_data.html',message=message)

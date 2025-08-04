@@ -1,0 +1,33 @@
+{% extends "dashboard.html" %}
+{% block content %}
+<h1> Manage Users </h1>
+<form name="delete_users" action="{{ url_for('delete_selected_users') }}" method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Delete user?</th>
+                <th>Delete user records?</th>            
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user['id'] }}</td> 
+                <td>{{ user['user'] }}</td> 
+                <td>
+                    <input type="checkbox" name="delete_user_ids" value="{{ user['user'] }}">
+                </td>
+            </tr>
+            {% endfor %} 
+        </tbody>
+    </table>
+<br>
+<input type="submit" value="Delete Selected User" class="submit-button">
+</form>  
+{% endblock %}
+
+
+
+
