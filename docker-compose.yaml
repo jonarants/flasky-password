@@ -1,4 +1,11 @@
 services:
+  memcached:
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+    networks:
+      - app-network
+    container_name: memcached
   web:
     build:
       context: .
@@ -9,6 +16,7 @@ services:
       - db
     networks:
       - app-network
+    command: gunicorn --bind 0.0.0.0:5000 --timeout 120 --workers 2 app:app
     container_name: web
     secrets:
       - mysql_user_secret
@@ -17,7 +25,6 @@ services:
       - mysql_port_secret
       - mysql_database_secret
       - flask_secret_key_secret
-  
   nginx:
     build:
       context: .
@@ -52,6 +59,8 @@ services:
       - mysql_password_secret
       - mysql_database_secret
       - mysql_root_password_file
+      - mysql-admin-mysql-temp
+      - mysql-salt
 
 networks:
   app-network:
@@ -76,4 +85,7 @@ secrets:
     file: ./secrets/FLASK_SECRET_KEY.txt
   mysql_root_password_file:
     file: ./secrets/MYSQL_ROOT_PASSWORD_FILE.txt
-  
+  mysql-admin-mysql-temp:
+    file: ./secrets/MYSQL_ADMIN_TEMP.txt
+  mysql-salt:
+    file: ./secrets/MYSQL_SALT.txt

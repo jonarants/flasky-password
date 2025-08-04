@@ -1,0 +1,333 @@
+/* Reset básico para box-sizing */
+html {
+    box-sizing: border-box;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+/* Paleta de Colores Morados */
+:root {
+    --primary-purple: #6A057F; /* Un morado oscuro y profundo */
+    --light-purple: #BC7FCD;   /* Un morado más claro y suave */
+    --accent-color: #FFC0CB;   /* Rosa suave como acento (opcional, para pequeños toques) */
+    --text-color-light: #F8F8F8; /* Texto claro para fondos oscuros */
+    --text-color-dark: #333333; /* Texto oscuro para fondos claros */
+    --background-light: #d6d1d6; /* Fondo general claro */
+    --border-color: #B28FCE;   /* Color para bordes sutiles */
+    --error-red: #D32F2F;      /* Rojo para messages de error */
+}
+
+/* Base HTML y Tipografía */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-light);
+    color: var(--text-color-dark);
+    line-height: 1.6;
+    min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura de la ventana */
+    display: flex; /* Usamos flex para controlar el flujo general */
+    flex-direction: column; /* Apila elementos verticalmente: header, main, (footer) */
+    box-sizing: border-box; /* Asegura que padding no añada ancho */
+}
+
+/* Header y Navegación */
+header {
+    background-color: var(--primary-purple);
+    color: var(--text-color-light);
+    padding: 1rem 20px; /* Añadido padding horizontal aquí */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 100%;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: fit-content; /* Limita el ancho del contenido de la navegación */
+    margin: 0 auto; /* Centra la navegación dentro del header */
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: var(--text-color-light);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+nav ul li a:hover,
+nav ul li a:focus {
+    background-color: var(--light-purple);
+    color: var(--primary-purple);
+}
+
+/* Contenedor Principal para Dashboard y Páginas con Contenido Estructurado */
+.container {
+    flex-grow: 1; /* Permite que el contenedor crezca y ocupe el espacio disponible */
+    max-width: 960px; /* Ancho máximo para el contenido */
+    margin: 20px auto; /* Centrar el contenedor horizontalmente y darle espacio superior/inferior */
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    /* Para la imagen del gato, ya que está dentro de este .container en login.html */
+    display: flex;
+    flex-direction: column; /* Apila el contenido del container (si hay varios) */
+    align-items: center; /* Centra horizontalmente los ítems (como la imagen) */
+    justify-content: center; /* Centra verticalmente si hay espacio extra */
+}
+
+/* --- ESTILOS PARA CENTRAR FORMULARIOS Y MENSAJES (Login, Register, Result, Error, etc.) --- */
+form, .message-box {
+    margin: 50px auto; /* Centrar horizontalmente y dar espacio vertical desde los bordes del body/header */
+    max-width: 400px;  /* Ancho máximo para formularios y mensajes */
+    width: 100%;       /* Ocupar el 100% del espacio disponible hasta el max-width */
+    box-sizing: border-box; /* Asegura que padding no añada ancho */
+    padding: 25px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustes específicos para el mensaje de error si está dentro de un contenedor o directamente en el body */
+.message-box {
+    margin-top: 20px;
+    text-align: center;
+}
+.message-box.error-message {
+    background-color: #FFEBEE;
+    color: var(--error-red);
+    border: 1px solid var(--error-red);
+}
+
+.message-box a {
+    color: var(--primary-purple);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.message-box a:hover {
+    text-decoration: underline;
+}
+
+
+/* Título H2 (aplicable a login, register, etc.) */
+h2 {
+    color: var(--primary-purple);
+    margin: 25px auto; /* Centrar y dar margen vertical */
+    font-size: 2.2em;
+    text-align: center;
+    width: 100%;
+    max-width: 400px; /* Alineado con el ancho del formulario/contenedor */
+}
+
+/* Estilos para campos de formulario */
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--primary-purple);
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+form input[type="submit"] {
+    background-color: var(--primary-purple);
+    color: var(--text-color-light);
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+form input[type="submit"]:hover {
+    background-color: var(--light-purple);
+    color: var(--primary-purple);
+}
+
+fieldset {
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+legend {
+    font-weight: bold;
+    color: var(--primary-purple);
+    padding: 0 10px;
+}
+
+
+/* Estilos para tablas (show_tables) */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+table th, table td {
+    border: 1px solid var(--border-color);
+    padding: 12px 15px;
+    text-align: left;
+}
+
+table th {
+    background-color: var(--primary-purple);
+    color: var(--text-color-light);
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #f7f7f7;
+}
+
+table tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Estilos para encabezados H1, H3 (H2 tiene su estilo arriba) */
+h1, h3 {
+    color: var(--primary-purple);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Estilos para todas las imágenes por defecto */
+img {
+    max-width: 100%; /* Asegura que la imagen no desborde su contenedor */
+    height: auto;    /* Mantiene la proporción de la imagen */
+    display: block;  /* Elimina el espacio extra debajo de las imágenes */
+    margin: 20px auto; /* Centra la imagen y le da margen vertical */
+    border-radius: 8px; /* Bordes redondeados para la imagen */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra para que se vea más integrada */
+}
+
+/* --- ESTILOS PARA EL FOOTER --- */
+footer {
+    background-color: var(--primary-purple);
+    color: var(--text-color-light);
+    padding: 1.5rem 20px; /* padding horizontal añadido */
+    text-align: center;
+    font-size: 0.9em;
+    margin-top: auto; /* Empuja el footer hacia la parte inferior del flex container (body) */
+    width: 100%; /* Asegura que ocupe todo el ancho */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Sombra superior sutil */
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+footer a {
+    color: var(--accent-color); /* Un color que contraste para los enlaces del footer */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--text-color-light);
+    text-decoration: underline;
+}
+
+/* Responsive Design (para móviles) */
+@media (max-width: 768px) {
+    body {
+        padding: 0; /* Eliminado padding lateral del body en móviles */
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    nav ul li {
+        margin: 10px 0;
+    }
+
+    h2 { /* Ajuste del título H2 en móviles */
+        font-size: 1.8em;
+        margin-bottom: 15px;
+    }
+
+    form, .container, .message-box {
+        padding: 20px;
+        max-width: 95%;
+        margin: 10px auto; /* Ajuste de margen para móviles */
+    }
+
+    /* Estilos de tabla responsive */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    table thead {
+        display: none;
+    }
+
+    table tr {
+        margin-bottom: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    table td {
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+    }
+
+    table td:before {
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        color: var(--primary-purple);
+    }
+
+    table td:nth-of-type(1):before { content: "ID:"; }
+    table td:nth-of-type(2):before { content: "Website:"; }
+    table td:nth-of-type(3):before { content: "Username:"; }
+    table td:nth-of-type(4):before { content: "Password:"; }
+    table td:nth-of-type(5):before { content: "Created by:"; }
+
+    header {
+        padding: 1rem 15px; /* Ajuste el padding del header para móviles */
+    }
+
+    footer {
+        padding: 1rem 15px; /* Ajuste el padding del footer para móviles */
+        font-size: 0.8em;
+    }
+}

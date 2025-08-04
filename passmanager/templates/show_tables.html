@@ -1,0 +1,26 @@
+{% extends "dashboard.html" %}
+{% block content %}
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Website</th>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Created by</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in websites %}
+        <tr>
+            <td>{{ entry['id'] }}</td> 
+            <td>{{ entry['website'] }}</td> 
+            <td>{{ entry['user'] }}</td> 
+            <td>{{ entry['password'] }}</td>
+            <td>{{ entry['user_id'] }}</td>   
+        </tr>
+        {% endfor %} 
+    </tbody>
+</table>  
+{% endblock %}

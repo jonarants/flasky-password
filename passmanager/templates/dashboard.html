@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flasky Password Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{{url_for('dashboard')}}">Dashboard</a></li>
+                <li><a href="{{url_for('register')}}">Register a user</a></li>
+                <li><a href="{{url_for('manage_users')}}">Manage Users</a></li>      
+                <li><a href="{{url_for('login')}}">Login with another user</a></li>
+                <li><a href="{{url_for('website_info')}}">Save sites Information</a></li>
+                <li><a href="{{url_for('show_tables')}}">Show tables</a></li>
+                <li><a href="{{url_for('logout')}}">Logout</a></li>                
+            </ul>
+        </nav>
+    </header>
+    <main class="container">
+        {% block content %}
+            {% if 'user' in session %}
+                <h2>Welcome to Flasky Password Manager</h2>
+                 <p> Welcome back {{ session['user'] }} </p>
+            {% endif %}
+        {% endblock %}
+    </main>
+    <footer>
+        <p>&copy; Flasky Password Manager. Todos los derechos reservados.</p>
+    </footer>    
+</body>
+</html>

@@ -1,17 +1,36 @@
-{% extends "home.html" %}
-{% block content %}
-<h2>Login</h2>
-    <form name="login"id="formulario"action="auth_validation" method="post">
-        <fieldset><legend> Informacion de usuario </legend>
-        <label for="user">Usuario:</label>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flasky Password</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+</head>
+<body>
+    <h2>Welcome to Flasky Password Manager</h2>
+    <form name="login"id="formulario"action="login_validation" method="post">
+        <fieldset><legend> Login </legend>
+        <label for="user">Username:</label>
         <br>
-        <input type="text" name="user" id="user" value="" placeholder="Usuario" required> 
+        <input type="text" name="user" id="user" value="" placeholder="username" required> 
         <br>
         <label for="pasword">Password:</label>
         <br>
-        <input type="password" name="password" id="password" value="" placeholder="Password" required>
+        <input type="password" name="password" id="password" value="" placeholder="password" required>
         <br>
         <input type="submit" value="Enviar"/>
         </fieldset>
-    </form>    
-{% endblock %}
+    </form>
+    <main class="container">
+        {% block content %}
+            {% if 'user' not in session %}
+                <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+            {% endif %}
+        {% endblock %}
+    </main> 
+    <footer>
+        <p>&copy; Flasky Password Manager. Todos los derechos reservados.</p>
+    </footer>    
+</body>
+</html>
