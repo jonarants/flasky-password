@@ -13,7 +13,7 @@ html {
     --accent-color: #FFC0CB;   /* Rosa suave como acento (opcional, para pequeños toques) */
     --text-color-light: #F8F8F8; /* Texto claro para fondos oscuros */
     --text-color-dark: #333333; /* Texto oscuro para fondos claros */
-    --background-light: #F2F2F2; /* Fondo general claro */
+    --background-light: #d6d1d6; /* Fondo general claro */
     --border-color: #B28FCE;   /* Color para bordes sutiles */
     --error-red: #D32F2F;      /* Rojo para messages de error */
 }
@@ -48,7 +48,7 @@ nav ul {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    max-width: 960px; /* Limita el ancho del contenido de la navegación */
+    max-width: fit-content; /* Limita el ancho del contenido de la navegación */
     margin: 0 auto; /* Centra la navegación dentro del header */
 }
 

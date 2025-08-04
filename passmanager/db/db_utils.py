@@ -1,14 +1,14 @@
 from secrets.read_secrets import ReadSecrets
 import mysql.connector
 
-class DBConfigLoader:
-    
-    def __init__(self, read_secrets : ReadSecrets):
+class DBUtils:
+
+    def __init__(self, read_secrets):
         if not isinstance(read_secrets, ReadSecrets):
-            raise TypeError("read_secrets must be an instance of ReadSecrets.")
+            raise TypeError("read secrets must be an instandes of ReadSecrets.")
         self.read_secrets = read_secrets
     
-    def create_connection_cursor(self) -> tuple:
+    def connect(self):
         connection = None
         cursor = None
         config = {
@@ -21,3 +21,16 @@ class DBConfigLoader:
         connection = mysql.connector.connect(**config)
         cursor = connection.cursor(dictionary=True)
         return connection, cursor
+    
+    def disconnect(self, connection, cursor):
+        if cursor:
+            try:
+                cursor.close()
+            except Exception as e:
+                print (f"Error closing cursor {e}")
+
+        if connection:
+            try:
+                connection.close()
+            except Exception as e:
+                print(f"Error closin the connection")
