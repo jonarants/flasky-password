@@ -14,13 +14,11 @@ from pymemcache.client import base
 
 # Refactors
 from secrets.read_secrets import ReadSecrets
-from db.db_connector import DBConfigLoader
-from db.db_disconnect import DisconnectDB
+from db.db_utils import DBUtils
 from crypto.crypto_utils import CryptoUtils
 
 read_secrets = ReadSecrets()
-db_config_loader = DBConfigLoader(read_secrets)
-disconnect_db = DisconnectDB()
+db_utils = DBUtils(read_secrets)
 crypto_utils = CryptoUtils()
 
 app = Flask(__name__)
@@ -58,6 +56,10 @@ def dashboard():
 # Ruta de login/validacion del login/ruta principal
 @app.route('/')
 def login():
+    if 'user' in session:
+        memcached_client.delete(f"fernet_key:{session['user']}")
+    session.pop('user', None)
+    session.clear()
     return render_template('login.html')
 
 @app.route('/login_validation', methods=['POST'])
@@ -66,7 +68,7 @@ def login_validation():
     password = request.form['password']
 
     try: 
-        connection, cursor = db_config_loader.create_connection_cursor()
+        connection, cursor = db_utils.connect()
         cursor.execute("SELECT * FROM users WHERE user = %s",(user,))
         user_record = cursor.fetchone()
         if user_record:
@@ -85,7 +87,7 @@ def login_validation():
         message = "Error:" + str(e)
         return render_template('login_error.html', message=message)
     finally:
-        disconnect_db.close_connection_cursor(connection, cursor) 
+        db_utils.disconnect(connection, cursor) 
 
 # Metodo de logout
 
@@ -117,7 +119,7 @@ def register_user():
     salt = crypto_utils.create_salt()
     #is_valid = bcrypt.check_password_hash(hashed_password, password)
     try: 
-        connection, cursor = db_config_loader.create_connection_cursor()
+        connection, cursor = db_utils.connect()
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,encryption_salt) VALUES (%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,salt))
         connection.commit()
         message = f"The {user} was created correctly"
@@ -126,7 +128,7 @@ def register_user():
         message = f"Error al insertar a la base de datos:" + str(e)
         return render_template('result_data.html', message=message)
     finally:
-      disconnect_db.close_connection_cursor(connection, cursor)
+      db_utils.disconnect(connection, cursor)
 
 
 
@@ -148,7 +150,7 @@ def capture_website_data():
     encryption_key = memcached_client.get(memcached_key_name)
     password = crypto_utils.encrypt_password(encryption_key,password)
     try:
-        connection, cursor = db_config_loader.create_connection_cursor()
+        connection, cursor = db_utils.connect()
         cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
         connection.commit()
         message=f"The website for {website} was added successfully"
@@ -157,7 +159,7 @@ def capture_website_data():
         message="Error when trying to insert the information into the table:" + str(e)
         return render_template('result_data.html',message=message)
     finally:
-        disconnect_db.close_connection_cursor(connection, cursor)
+        db_utils.disconnect(connection, cursor)
 
 # Muestra las tablas de información desencriptada
 @app.route('/show_tables')
@@ -168,7 +170,7 @@ def show_tables():
     encryption_key = memcached_client.get(memcached_key_name)
     websites_decrypted_data = []
     try:
-        connection, cursor = db_config_loader.create_connection_cursor()
+        connection, cursor = db_utils.connect()
         cursor.execute("SELECT * FROM websites_info WHERE user_id = %s",(username_logged_in,))
         websites = cursor.fetchall() 
         for entry in websites:
@@ -182,7 +184,7 @@ def show_tables():
                         'password': decrypted_password,
                         'user_id': entry['user_id']
                     })
-                except Exception as decryp_error:
+                except Exception as decrypt_error:
                     websites_decrypted_data.append({
                         'id': entry['id'],
                         'website': entry['website'],
@@ -204,7 +206,7 @@ def show_tables():
         message="Error al conectar a las base de datos" +str(e)
         return render_template('result_data.html',message=message)
     finally:
-        disconnect_db.close_connection_cursor(connection, cursor)
+        db_utils.disconnect(connection, cursor)
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
