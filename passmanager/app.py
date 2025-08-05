@@ -44,6 +44,17 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def is_admin(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session:
+            return redirect(url_for('login'))
+        if session['admin'] != True:
+            flash("You don't have the right role to access this page.",'warning')
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Metodos de decoradores para rutas
 
 # Ruta del dashboard
@@ -73,9 +84,14 @@ def login_validation():
         if user_record:
             if crypto_utils.validate_password(user_record['password'], password): #Compara los hashes para la autenticacion
                 session['user'] = user_record['user']
+                if user_record['admin'] == 1:
+                    user_record == True
+                else:
+                    user_record['admin'] == False
+                session['admin'] = user_record['admin']
                 session.permanent = True
-                salt = user_record['encryption_salt']
-                key = crypto_utils.get_key(password, salt)
+                encryption_salt = user_record['encryption_salt']
+                key = crypto_utils.get_key(password, encryption_salt)
                 memcached_client.set(f"fernet_key:{session['user']}", key, expire=300)
                 return redirect(url_for('dashboard'))
             else:
@@ -102,11 +118,13 @@ def logout():
 # Ruta de registro
 @app.route('/register')
 @login_required
+@is_admin
 def register():
     return render_template('register.html')
 
 @app.route('/register_user', methods=['POST'])
 @login_required
+@is_admin
 def register_user():
 
     user = request.form['user']
@@ -114,12 +132,19 @@ def register_user():
     two_factor_secret = "placeholder data"#request.form['two_factor_secret']
     two_factor_enabled = request.form.get('two_factor_enabled')
     two_factor_enabled = (two_factor_enabled == "Enabled")
+    is_admin_enabled = request.form.get('is_admin_enabled')
+    is_admin_enabled = (is_admin_enabled == "Enabled")
+    
     hashed_password = crypto_utils.hash_password(password)
-    salt = crypto_utils.create_salt()
+    user_encryption_key = crypto_utils.generate_fernet_key()
+    key_salt = crypto_utils.create_salt()
+    derivation_key = crypto_utils.get_key(password,key_salt)
+    encrypted_user_key = crypto_utils.encrypt_derivation(derivation_key, user_encryption_key)
+
     #is_valid = bcrypt.check_password_hash(hashed_password, password)
     try: 
         connection, cursor = db_utils.connect()
-        cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,encryption_salt) VALUES (%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,salt))
+        cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,key_salt,encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,key_salt, encrypted_user_key,is_admin_enabled))
         connection.commit()
         message = f"The {user} was created correctly"
         return render_template ('result_data.html', message=message)
@@ -133,6 +158,7 @@ def register_user():
 
 @app.route('/manage_users')
 @login_required
+@is_admin
 def manage_users():
     try:
         connection, cursor = db_utils.connect()
@@ -145,8 +171,11 @@ def manage_users():
             
     return render_template('manage_users.html', users = users)
 
+# Eliminar usuarios
+
 @app.route('/delete_selected_users', methods=['POST'])
 @login_required
+@is_admin
 def delete_selected_users():
     if request.method == 'POST':
         users_to_delete_ids = request.form.getlist('delete_user_ids')
@@ -172,6 +201,49 @@ def delete_selected_users():
                 db_utils.disconnect(connection, cursor)    
     return redirect(url_for('manage_users'))
 
+@app.route('/change_password', methods=['POST','GET'])
+@login_required
+def change_password():
+    if request.method == 'GET':
+        return render_template('change_password.html')
+    elif request.method == 'POST':
+        current_password = request.form('current_password')
+        new_password = request.form('new_password')
+        confirm_new_password = request.form('confirm_new_password')
+        current_user = session['user']
+        try:
+            connection, cursor = db_utils.connect()
+            cursor.execute("SELECT * FROM users WHERE user = %s",(current_user,))
+            user_record = cursor.fetchone()
+            if user_record:
+                if crypto_utils.validate_password(user_record['password'], current_password) and (new_password == confirm_new_password):
+                        
+                    #Desencripa la clave vieja
+                    derivation_key_old = crypto_utils.get_key(current_password, user_record['key_salt'])
+                    decrypted_user_key = crypto_utils.decrypt_derivation (derivation_key_old, user_record['encrypted_user_key'])
+                    
+                    new_hashed_password = crypto_utils.hash_password(new_password)
+                    new_key_salt = crypto_utils.create_salt()
+                    derivation_key_new = crypto_utils.get_key(new_password,new_key_salt)
+                    encrypted_user_key_new = crypto_utils.encrypt_derivation(derivation_key_new, decrypted_user_key)
+                    cursor.execute("""
+                        UPDATE users
+                        SET password %s,
+                            key_salt = %s
+                            encrypted_userkey = %s,
+                           
+                        WHERE user = %s 
+                    """, (new_hashed_password, new_key_salt, encrypted_user_key_new, current_user))
+                    connection.commit()
+                    return redirect(url_for('dashboard'))
+        except Exception as e:
+            message = f"Error when updating the password:" + str(e)
+            return render_template('result_data.html', message=message)
+        finally:
+            db_utils.disconnect(connection, cursor)
+        
+
+
 
 # Captura de informacion de sitios web
 @app.route('/website_info')
@@ -182,7 +254,7 @@ def website_info():
 @app.route('/capture_website_data', methods=['POST'])
 @login_required
 def capture_website_data():
-    username_logged_in = session ['user']
+    username_logged_in = session['user']
     user = request.form['user']
     password = request.form['password']
     website = request.form['website']

@@ -29,6 +29,17 @@ class CryptoUtils():
     def hash_password(self, password):
         return self.bcrypt.generate_password_hash(password, 12).decode('utf-8')
     
+    def generate_fernet_key(self):
+        return Fernet.generate_key()
+    
+    def encrypt_derivation(self,derivation_key, user_encryption_key):
+        fernet = Fernet(derivation_key)
+        return fernet.encrypt(user_encryption_key)
+    
+    def decrypt_derivation(self,derivation_key, user_encryption_key):
+        fernet = Fernet(derivation_key)
+        return fernet.decrypt(user_encryption_key)
+
     def get_key(self, password, salt):
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
