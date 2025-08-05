@@ -22,7 +22,9 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     two_factor_secret VARCHAR (255),
     two_factor_enabled BOOLEAN DEFAULT FALSE,
-    encryption_salt BLOB NOT NULL
+    key_salt BLOB NOT NULL,
+    encrypted_user_key BLOB NOT NULL,
+    admin BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS websites_info (
@@ -33,11 +35,13 @@ CREATE TABLE IF NOT EXISTS websites_info (
     user_id VARCHAR(255) NOT NULL  
 );
 
-INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, encryption_salt) VALUES (
+INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, admin) VALUES (
     'admin',
     '${ADMIN_HASH}',
     NULL,
     FALSE,
-    X'${SALT_HASH}'
+    X'${SALT_HASH}',
+    
+    TRUE
 );
 EOSQL
