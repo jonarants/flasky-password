@@ -7,7 +7,7 @@ class DBUtils:
         if not isinstance(read_secrets, ReadSecrets):
             raise TypeError("read secrets must be an instandes of ReadSecrets.")
         self.read_secrets = read_secrets
-    
+        
     def connect(self):
         connection = None
         cursor = None
@@ -33,4 +33,4 @@ class DBUtils:
             try:
                 connection.close()
             except Exception as e:
-                print(f"Error closin the connection")
+                print(f"Error closing the connection")

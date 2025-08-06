@@ -1,7 +1,7 @@
 {% extends "dashboard.html" %}
 {% block content %}
 <h2>Website's info</h2>
-    <form name="formulario"id="formulario"action="capture_website_data" method="post">
+    <form name="formulario"id="formulario"action="website_info" method="post">
         <fieldset><legend> Enter the information of the website </legend>
         <label for="website">Website:</label>
         <br>
@@ -17,5 +17,12 @@
         <br>
         <input type="submit" value="Submit"/>
         </fieldset>
-    </form>    
+    </form>
+        {% if message %}
+            <div class="alert alert-danger" role="alert">
+                {{message}}
+            </div>
+        {% else %}
+            <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+        {% endif %}    
 {% endblock %}
