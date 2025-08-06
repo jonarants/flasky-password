@@ -8,6 +8,7 @@ DB_NAME=$(cat "${SECRETS_PATH}/mysql_database_secret")
 MYSQL_ROOT_PASSWORD=$(cat "${SECRETS_PATH}/mysql_root_password_file")
 ADMIN_HASH=$(cat "${SECRETS_PATH}/mysql-admin-mysql-temp")
 SALT_HASH=$(cat "${SECRETS_PATH}/mysql-salt")
+ENCRYPTED_USER_KEY=$(cat "${SECRETS_PATH}/mysql-encrypted-user-key")
 
 mysql -u root -p"${MYSQL_ROOT_PASSWORD}" <<EOSQL
 CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;
@@ -23,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     two_factor_secret VARCHAR (255),
     two_factor_enabled BOOLEAN DEFAULT FALSE,
     key_salt BLOB NOT NULL,
-    encrypted_user_key BLOB NOT NULL,
+    encrypted_user_key VARCHAR (255) NOT NULL,
     admin BOOLEAN DEFAULT FALSE
 );
 
@@ -41,7 +42,7 @@ INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, key_sa
     NULL,
     FALSE,
     X'${SALT_HASH}',
-    
+    '${ENCRYPTED_USER_KEY}',
     TRUE
 );
 EOSQL
