@@ -61,6 +61,7 @@ services:
       - mysql_root_password_file
       - mysql-admin-mysql-temp
       - mysql-salt
+      - mysql-encrypted-user-key
 
 networks:
   app-network:
@@ -89,3 +90,5 @@ secrets:
     file: ./secrets/MYSQL_ADMIN_TEMP.txt
   mysql-salt:
     file: ./secrets/MYSQL_SALT.txt
+  mysql-encrypted-user-key:
+    file: ./secrets/MYSQL_ENCRYPTED_USER_KEY.txt

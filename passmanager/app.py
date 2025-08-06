@@ -34,6 +34,9 @@ def before_request():
     if 'user' in session:
         session.permanent = True
         session['user']
+        memcached_key_name = f"fernet_key:{session['user']}"
+        if memcached_client.get(memcached_key_name):
+            memcached_client.touch(memcached_key_name, expire=60)
 
 # Definicion del decorador de login necesario
 def login_required(f):
@@ -85,14 +88,15 @@ def login_validation():
             if crypto_utils.validate_password(user_record['password'], password): #Compara los hashes para la autenticacion
                 session['user'] = user_record['user']
                 if user_record['admin'] == 1:
-                    user_record == True
+                    session['admin'] = True
                 else:
-                    user_record['admin'] == False
-                session['admin'] = user_record['admin']
+                    session['admin'] = False
                 session.permanent = True
-                encryption_salt = user_record['encryption_salt']
-                key = crypto_utils.get_key(password, encryption_salt)
-                memcached_client.set(f"fernet_key:{session['user']}", key, expire=300)
+                user_encryption_key = user_record['encrypted_user_key']
+                key_salt = user_record['key_salt']
+                derivation_key = crypto_utils.get_key(password, key_salt)
+                decrypted_user_key = crypto_utils.decrypt_derivation(derivation_key, user_encryption_key)
+                memcached_client.set(f"fernet_key:{session['user']}", decrypted_user_key, expire=60)
                 return redirect(url_for('dashboard'))
             else:
                 return render_template('login_error.html', message= f"Usuario o contraseña invalidos")
@@ -207,9 +211,9 @@ def change_password():
     if request.method == 'GET':
         return render_template('change_password.html')
     elif request.method == 'POST':
-        current_password = request.form('current_password')
-        new_password = request.form('new_password')
-        confirm_new_password = request.form('confirm_new_password')
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_new_password = request.form['confirm_new_password']
         current_user = session['user']
         try:
             connection, cursor = db_utils.connect()
@@ -218,7 +222,7 @@ def change_password():
             if user_record:
                 if crypto_utils.validate_password(user_record['password'], current_password) and (new_password == confirm_new_password):
                         
-                    #Desencripa la clave vieja
+                    #Desencripta la clave vieja
                     derivation_key_old = crypto_utils.get_key(current_password, user_record['key_salt'])
                     decrypted_user_key = crypto_utils.decrypt_derivation (derivation_key_old, user_record['encrypted_user_key'])
                     
@@ -228,10 +232,9 @@ def change_password():
                     encrypted_user_key_new = crypto_utils.encrypt_derivation(derivation_key_new, decrypted_user_key)
                     cursor.execute("""
                         UPDATE users
-                        SET password %s,
-                            key_salt = %s
-                            encrypted_userkey = %s,
-                           
+                        SET password = %s,
+                            key_salt = %s,
+                            encrypted_user_key = %s
                         WHERE user = %s 
                     """, (new_hashed_password, new_key_salt, encrypted_user_key_new, current_user))
                     connection.commit()
