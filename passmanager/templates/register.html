@@ -3,18 +3,18 @@
     <form name="login"id="formulario"action="register_user" method="post">
         <fieldset><legend> Enter the info for the user to save in the password manager </legend>
         <label for="user">User:</label>
-        <input type="text" name="user" id="user" value="" placeholder="Usuario" required> 
+        <input type="text" name="user" id="user" value="" placeholder="User" required> 
         <br>
         <label for="pasword">Password:</label>
         <input type="password" name="password" id="password" value="" placeholder="Password" required>
         <br>
-        <label for="two_factor_enabled">Habilitar 2FA:</label>
+        <label for="two_factor_enabled">Enable 2FA:</label>
         <input type="checkbox" name="two_factor_enabled" id="two_factor_enabled" value="Enabled" unchecked>
         <br>
         <label for="two_factor_enabled">Admin:</label>
         <input type="checkbox" name="is_admin_enabled" id="is_admin_enabled" value="Enabled" unchecked>
         <br>        
-        <input type="submit" value="Enviar"/>
+        <input type="submit" value="Submit"/>
         </fieldset>
     </form>
 {% endblock %}
