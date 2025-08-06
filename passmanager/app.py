@@ -1,13 +1,6 @@
 from datetime import timedelta
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from flask_bcrypt import Bcrypt #
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
-from cryptography.fernet import Fernet #
-import mysql.connector
-import base64
-import os
 from functools import wraps
 from pymemcache.client import base
 
@@ -50,8 +43,6 @@ def login_required(f):
 def is_admin(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user' not in session:
-            return redirect(url_for('login'))
         if session['admin'] != True:
             flash("You don't have the right role to access this page.",'warning')
             return redirect(url_for('dashboard'))
@@ -79,7 +70,8 @@ def login():
 def login_validation():
     user = request.form['user']
     password = request.form['password']
-
+    connection = None
+    cursor = None
     try: 
         connection, cursor = db_utils.connect()
         cursor.execute("SELECT * FROM users WHERE user = %s",(user,))
@@ -99,12 +91,14 @@ def login_validation():
                 memcached_client.set(f"fernet_key:{session['user']}", decrypted_user_key, expire=60)
                 return redirect(url_for('dashboard'))
             else:
-                return render_template('login_error.html', message= f"Usuario o contraseña invalidos")
+                message = f"Usuario o contraseña invalidos"
+                return render_template('login.html', message = message)
         else:
-            return render_template('login_error.html', message= f"Usuario o contraseña invalidos")    
+            message = f"Usuario o contraseña invalidos"
+            return render_template('login.html', message = message)
     except Exception as e:
         message = "Error:" + str(e)
-        return render_template('login_error.html', message=message)
+        return render_template('login.html', message = message)
     finally:
         db_utils.disconnect(connection, cursor) 
 
@@ -153,7 +147,7 @@ def register_user():
         message = f"The {user} was created correctly"
         return render_template ('result_data.html', message=message)
     except Exception as e:
-        message = f"Error al insertar a la base de datos:" + str(e)
+        message = f"Error creating the user:" + str(e)
         return render_template('result_data.html', message=message)
     finally:
       db_utils.disconnect(connection, cursor)
@@ -205,11 +199,11 @@ def delete_selected_users():
                 db_utils.disconnect(connection, cursor)    
     return redirect(url_for('manage_users'))
 
-@app.route('/change_password', methods=['POST','GET'])
+@app.route('/reset_password', methods=['POST','GET'])
 @login_required
-def change_password():
+def reset_password():
     if request.method == 'GET':
-        return render_template('change_password.html')
+        return render_template('reset_password.html')
     elif request.method == 'POST':
         current_password = request.form['current_password']
         new_password = request.form['new_password']
@@ -249,33 +243,32 @@ def change_password():
 
 
 # Captura de informacion de sitios web
-@app.route('/website_info')
+
+@app.route('/website_info', methods=['POST','GET'])
 @login_required
 def website_info():
-    return render_template('website_info.html')
+    if request.method == 'GET':
+        return render_template('website_info.html')
+    elif request.method == 'POST':
+        username_logged_in = session['user']
+        user = request.form['user']
+        password = request.form['password']
+        website = request.form['website']
 
-@app.route('/capture_website_data', methods=['POST'])
-@login_required
-def capture_website_data():
-    username_logged_in = session['user']
-    user = request.form['user']
-    password = request.form['password']
-    website = request.form['website']
-
-    memcached_key_name= f"fernet_key:{username_logged_in}"
-    encryption_key = memcached_client.get(memcached_key_name)
-    password = crypto_utils.encrypt_password(encryption_key,password)
-    try:
-        connection, cursor = db_utils.connect()
-        cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
-        connection.commit()
-        message=f"The website for {website} was added successfully"
-        return render_template('website_info_added.html',message=message)
-    except Exception as e:
-        message="Error when trying to insert the information into the table:" + str(e)
-        return render_template('result_data.html',message=message)
-    finally:
-        db_utils.disconnect(connection, cursor)
+        memcached_key_name= f"fernet_key:{username_logged_in}"
+        encryption_key = memcached_client.get(memcached_key_name)
+        password = crypto_utils.encrypt_password(encryption_key,password)
+        try:
+            connection, cursor = db_utils.connect()
+            cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
+            connection.commit()
+            message=f"The website for {website} was added successfully"
+            return render_template('website_info.html',message=message)
+        except Exception as e:
+            message="Error when trying to insert the information into the table:" + str(e)
+            return render_template('website_info.html',message=message)
+        finally:
+            db_utils.disconnect(connection, cursor)
 
 # Muestra las tablas de información desencriptada
 @app.route('/show_tables')

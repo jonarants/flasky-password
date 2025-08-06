@@ -25,7 +25,13 @@
     <main class="container">
         {% block content %}
             {% if 'user' not in session %}
-                <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+                {% if message %}
+                    <div class="alert alert-danger" role="alert">
+                        {{message}}
+                    </div>
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+                {% endif %}
             {% endif %}
         {% endblock %}
     </main> 
