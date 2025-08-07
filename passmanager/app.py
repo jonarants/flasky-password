@@ -30,6 +30,8 @@ def before_request():
         memcached_key_name = f"fernet_key:{session['user']}"
         if memcached_client.get(memcached_key_name):
             memcached_client.touch(memcached_key_name, expire=60)
+        else:
+            return redirect(url_for('login'))
 
 # Definicion del decorador de login necesario
 def login_required(f):
@@ -55,7 +57,8 @@ def is_admin(f):
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    message = request.args.get('message')
+    return render_template('dashboard.html', message=message)
 
 # Ruta de login/validacion del login/ruta principal
 @app.route('/')
@@ -153,51 +156,61 @@ def register_user():
       db_utils.disconnect(connection, cursor)
 
 # Administracion de usuarios
+# Eliminar usuarios
 
-@app.route('/manage_users')
+@app.get('/manage_users', endpoint='manage_users')
 @login_required
 @is_admin
 def manage_users():
-    try:
+    
+    connection = None
+    cursor = None
+    users = []
+    message = None
+    try: 
         connection, cursor = db_utils.connect()
         cursor.execute("SELECT id, user FROM users")
         users = cursor.fetchall()
     except Exception as e:
-        print(f"Not valid information found error {e}")
+        message = f"No valid information found, error {e}"
+        return render_template('manage_users.html', message=message)
     finally:
         db_utils.disconnect(connection, cursor)
-            
-    return render_template('manage_users.html', users = users)
+        message = request.args.get('message')
+        return render_template('manage_users.html', users=users, message=message)
 
-# Eliminar usuarios
-
-@app.route('/delete_selected_users', methods=['POST'])
+@app.post('/delete_users')
 @login_required
 @is_admin
-def delete_selected_users():
-    if request.method == 'POST':
-        users_to_delete_ids = request.form.getlist('delete_user_ids')
-        if not users_to_delete_ids:
-            flash("No users selected for deletion.", 'info')
-            return redirect(url_for('manage_users'))
+def delete_user():
+    connection = None
+    cursor = None
+    users = []
+    users_to_delete_ids = request.form.getlist('delete_user_ids')
+    if not users_to_delete_ids:
+        message = f"No users selected for deletion"
+        return redirect(url_for('manage_users', message=message))
+    else:
         try:
             connection, cursor = db_utils.connect()
-            user_list = ','.join(['%s'] * len (users_to_delete_ids))
-            sql_query = f"DELETE FROM users WHERE user IN ({user_list})"
+            users = ','.join(['%s'] * len (users_to_delete_ids))
+            sql_query = f"DELETE FROM websites_info WHERE user_id IN ({users})"
             cursor.execute(sql_query, tuple(users_to_delete_ids))
-            sql_query = f"DELETE FROM websites_info WHERE user_id IN ({user_list})"
+            sql_query = f"DELETE FROM users WHERE user IN ({users})"
             cursor.execute(sql_query, tuple(users_to_delete_ids))
             connection.commit()
-            flash(f"Successfully deleted {len(users_to_delete_ids)} user(s).", 'success')
+            message = f"Sucessfully deleted {len(users_to_delete_ids)} user(s)."
+            return redirect(url_for('manage_users', message=message))
         except Exception as e:
-            flash(f"Error deleting users: {e}","error")
+            message = f"Error deleting users {e}"
             if connection:
                 connection.rollback()
-            print(f"Error al eliminar usuarios {e}")
+            return redirect(url_for('manage_users', message=message))
         finally:
-            if connection and cursor:
-                db_utils.disconnect(connection, cursor)    
-    return redirect(url_for('manage_users'))
+            db_utils.disconnect(connection, cursor)
+            #(url_for('dashboard', message=message))
+
+# Reset password
 
 @app.route('/reset_password', methods=['POST','GET'])
 @login_required
@@ -232,7 +245,8 @@ def reset_password():
                         WHERE user = %s 
                     """, (new_hashed_password, new_key_salt, encrypted_user_key_new, current_user))
                     connection.commit()
-                    return redirect(url_for('dashboard'))
+                    message = f'Password changed for user {current_user}'
+                    return redirect(url_for('dashboard', message=message))
         except Exception as e:
             message = f"Error when updating the password:" + str(e)
             return render_template('result_data.html', message=message)

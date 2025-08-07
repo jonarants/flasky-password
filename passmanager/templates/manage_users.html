@@ -1,14 +1,15 @@
 {% extends "dashboard.html" %}
 {% block content %}
 <h1> Manage Users </h1>
-<form name="delete_users" action="{{ url_for('delete_selected_users') }}" method="post">
+<form name="manage_users" id="manageUsers" action="delete_users" method="post">
+    <p> By deleting a user you're also deleting all the entries created by that user in the database</p>
+    <p> Select which users are going to be deleted, this action is not reversible</p>
     <table>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>User</th>
-                <th>Delete user?</th>
-                <th>Delete user records?</th>            
+                <th>Delete user?</th>     
             </tr>
         </thead>
         <tbody>
@@ -25,7 +26,14 @@
     </table>
 <br>
 <input type="submit" value="Delete Selected User" class="submit-button">
-</form>  
+</form>
+{% if message %}
+    <div class="alert alert-danger" role="alert">
+        {{message}}
+    </div>
+{% else %}
+    <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+{% endif %}  
 {% endblock %}
 
 
