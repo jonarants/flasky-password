@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS websites_info (
     website VARCHAR(255) NOT NULL, 
     user VARCHAR(255) NOT NULL,     
     password BLOB NOT NULL,
-    user_id VARCHAR(255) NOT NULL  
+    owner VARCHAR(255) NOT NULL,
+    FOREIGN KEY (owner) REFERENCES users(user) ON DELETE CASCADE
 );
 
 INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, admin) VALUES (
