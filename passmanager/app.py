@@ -148,74 +148,62 @@ def register_user():
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,key_salt,encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,key_salt, encrypted_user_key,is_admin_enabled))
         connection.commit()
         message = f"The {user} was created correctly"
-        return render_template ('result_data.html', message=message)
+        return redirect(url_for('dashboard', message=message))
     except Exception as e:
         message = f"Error creating the user:" + str(e)
-        return render_template('result_data.html', message=message)
+        return redirect(url_for('dashboard', message=message))
     finally:
       db_utils.disconnect(connection, cursor)
 
 # Administracion de usuarios
 # Eliminar usuarios
 
-@app.get('/manage_users', endpoint='manage_users')
+@app.route('/manage_users', methods = ['GET', 'POST'])
 @login_required
 @is_admin
 def manage_users():
-    
     connection = None
     cursor = None
     users = []
     message = None
-    try: 
-        connection, cursor = db_utils.connect()
-        cursor.execute("SELECT id, user FROM users")
-        users = cursor.fetchall()
-    except Exception as e:
-        message = f"No valid information found, error {e}"
-        return render_template('manage_users.html', message=message)
-    finally:
-        db_utils.disconnect(connection, cursor)
-        message = request.args.get('message')
-        return render_template('manage_users.html', users=users, message=message)
-
-@app.post('/delete_users')
-@login_required
-@is_admin
-def delete_user():
-    connection = None
-    cursor = None
-    users = []
-    users_to_delete_ids = request.form.getlist('delete_user_ids')
-    if not users_to_delete_ids:
-        message = f"No users selected for deletion"
-        return redirect(url_for('manage_users', message=message))
-    else:
+    connection, cursor = db_utils.connect()
+    if request.method == 'GET':
         try:
-            connection, cursor = db_utils.connect()
-            users = ','.join(['%s'] * len (users_to_delete_ids))
-            sql_query = f"DELETE FROM websites_info WHERE user_id IN ({users})"
-            cursor.execute(sql_query, tuple(users_to_delete_ids))
-            sql_query = f"DELETE FROM users WHERE user IN ({users})"
-            cursor.execute(sql_query, tuple(users_to_delete_ids))
-            connection.commit()
-            message = f"Sucessfully deleted {len(users_to_delete_ids)} user(s)."
-            return redirect(url_for('manage_users', message=message))
+            cursor.execute("SELECT id, user from users")
+            users = cursor.fetchall()
         except Exception as e:
-            message = f"Error deleting users {e}"
-            if connection:
-                connection.rollback()
-            return redirect(url_for('manage_users', message=message))
+            message = f"No valid information found, error{e}"
+            return render_template('manage_users.html', message=message)
         finally:
-            db_utils.disconnect(connection, cursor)
-            #(url_for('dashboard', message=message))
-
-# Reset password
+            db_utils.disconnect(connection,cursor)
+            message = request.args.get('message')
+            return render_template('manage_users.html', users=users, message=message)
+    elif request.method == 'POST':
+        users_to_delete = request.form.getlist('delete_users_ids')
+        if not users_to_delete:
+            message = f"No users selected for deletion"
+            return redirect(url_for('manage_users', message=message))
+        else:
+            try:
+                users =','.join(['%s'] * len(users_to_delete))
+                sql_query = f"DELETE FROM users WHERE user in ({users})"
+                cursor.execute(sql_query, tuple(users_to_delete))
+                connection.commit()
+                message = f"Sucessfully deleted {len(users_to_delete)} user(s)."
+                return redirect(url_for('manage_users', message=message))
+            except Exception as e:
+                message = f"Error deleting users {e}"
+                if connection:
+                    connection.rollback()
+                return redirect(url_for('manage_users', message=message))
+            finally:
+                db_utils.disconnect(connection, cursor)
 
 @app.route('/reset_password', methods=['POST','GET'])
 @login_required
 def reset_password():
     if request.method == 'GET':
+        message = request.args.get('message')
         return render_template('reset_password.html')
     elif request.method == 'POST':
         current_password = request.form['current_password']
@@ -249,7 +237,7 @@ def reset_password():
                     return redirect(url_for('dashboard', message=message))
         except Exception as e:
             message = f"Error when updating the password:" + str(e)
-            return render_template('result_data.html', message=message)
+            return redirect(url_for('reset_password', message=message))
         finally:
             db_utils.disconnect(connection, cursor)
         
@@ -262,6 +250,7 @@ def reset_password():
 @login_required
 def website_info():
     if request.method == 'GET':
+        message = request.args.get('message')
         return render_template('website_info.html')
     elif request.method == 'POST':
         username_logged_in = session['user']
@@ -274,7 +263,7 @@ def website_info():
         password = crypto_utils.encrypt_password(encryption_key,password)
         try:
             connection, cursor = db_utils.connect()
-            cursor.execute('INSERT INTO websites_info (website,user,password,user_id) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
+            cursor.execute('INSERT INTO websites_info (website,user,password,owner) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
             connection.commit()
             message=f"The website for {website} was added successfully"
             return render_template('website_info.html',message=message)
@@ -288,13 +277,14 @@ def website_info():
 @app.route('/show_tables')
 @login_required
 def show_tables():
+    message = request.args.get('message')
     username_logged_in = session ['user']
     memcached_key_name= f"fernet_key:{username_logged_in}"
     encryption_key = memcached_client.get(memcached_key_name)
     websites_decrypted_data = []
     try:
         connection, cursor = db_utils.connect()
-        cursor.execute("SELECT * FROM websites_info WHERE user_id = %s",(username_logged_in,))
+        cursor.execute("SELECT * FROM websites_info WHERE owner = %s",(username_logged_in,))
         websites = cursor.fetchall() 
         for entry in websites:
             if entry['password']:
@@ -305,7 +295,7 @@ def show_tables():
                         'website': entry['website'],
                         'user': entry['user'],
                         'password': decrypted_password,
-                        'user_id': entry['user_id']
+                        'owner': entry['owner']
                     })
                 except Exception as decrypt_error:
                     websites_decrypted_data.append({
@@ -313,7 +303,7 @@ def show_tables():
                         'website': entry['website'],
                         'user': entry['user'],
                         'password': "[Error decrypting password or incorrect key]", # message para el usuario
-                        'user_id': entry['user_id']
+                        'owner': entry['owner']
                     })
             else:
                 websites_decrypted_data.append({
@@ -321,13 +311,13 @@ def show_tables():
                     'website': entry['website'],
                     'user': entry['user'],
                     'password': "[No password stored]",
-                    'user_id': entry['user_id']
+                    'owner': entry['owner']
                 })
 
         return render_template('show_tables.html', websites=websites_decrypted_data)
     except Exception as e:
         message="Error al conectar a las base de datos" +str(e)
-        return render_template('result_data.html',message=message)
+        return redirect(url_for('show_tables',message=message))
     finally:
         db_utils.disconnect(connection, cursor)
 

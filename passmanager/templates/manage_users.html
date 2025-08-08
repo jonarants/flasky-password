@@ -1,7 +1,7 @@
 {% extends "dashboard.html" %}
 {% block content %}
 <h1> Manage Users </h1>
-<form name="manage_users" id="manageUsers" action="delete_users" method="post">
+<form name="manage_users" id="manageUsers" action="manage_users" method="post">
     <p> By deleting a user you're also deleting all the entries created by that user in the database</p>
     <p> Select which users are going to be deleted, this action is not reversible</p>
     <table>
@@ -18,7 +18,7 @@
                 <td>{{ user['id'] }}</td> 
                 <td>{{ user['user'] }}</td> 
                 <td>
-                    <input type="checkbox" name="delete_user_ids" value="{{ user['user'] }}">
+                    <input type="checkbox" name="delete_users_ids" value="{{ user['user'] }}">
                 </td>
             </tr>
             {% endfor %} 
