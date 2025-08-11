@@ -33,4 +33,4 @@ class DBUtils:
             try:
                 connection.close()
             except Exception as e:
-                print(f"Error closing the connection")
+                print(f"Error closing the connection {e}")
