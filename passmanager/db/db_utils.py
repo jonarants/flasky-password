@@ -19,7 +19,7 @@ class DBUtils:
             'database': self.read_secrets.get_secret('mysql_database_secret')
         }
         connection = mysql.connector.connect(**config)
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary=True) #False positive
         return connection, cursor
     
     def disconnect(self, connection, cursor):

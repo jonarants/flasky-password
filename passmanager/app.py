@@ -28,6 +28,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=60) # Manejo de ses
 
 #CONSTANTS SONAR
 LOGIN = 'login.html'
+WEBSITE_INFO = 'website_info.html'
 # Definicion del decorador befor_request que se usa para el timeout de sesiones
 
 @app.before_request
@@ -187,13 +188,14 @@ def manage_users():
         try:
             cursor.execute("SELECT id, user from users")
             users = cursor.fetchall()
+            message = request.args.get('message')
+            return render_template('manage_users.html', users=users, message=message)
         except Exception as e:
             message = f"No valid information found, error{e}"
             return render_template('manage_users.html', message=message)
         finally:
             db_utils.disconnect(connection,cursor)
-            message = request.args.get('message')
-            return render_template('manage_users.html', users=users, message=message)
+            
     elif request.method == 'POST':
         users_to_delete = request.form.getlist('delete_users_ids')
         if not users_to_delete:
@@ -267,7 +269,7 @@ def reset_password():
 def website_info():
     if request.method == 'GET':
         message = request.args.get('message')
-        return render_template('website_info.html')
+        return render_template(WEBSITE_INFO)
     elif request.method == 'POST':
         username_logged_in = session['user']
         user = request.form['user']
@@ -282,10 +284,10 @@ def website_info():
             cursor.execute('INSERT INTO websites_info (website,user,password,owner) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
             connection.commit()
             message=f"The website for {website} was added successfully"
-            return render_template('website_info.html',message=message)
+            return render_template(WEBSITE_INFO,message=message)
         except Exception as e:
             message="Error when trying to insert the information into the table:" + str(e)
-            return render_template('website_info.html',message=message)
+            return render_template(WEBSITE_INFO,message=message)
         finally:
             db_utils.disconnect(connection, cursor)
 
