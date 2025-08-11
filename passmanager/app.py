@@ -9,6 +9,8 @@ import os
 from secrets.read_secrets import ReadSecrets
 from db.db_utils import DBUtils
 from crypto.crypto_utils import CryptoUtils
+from flask_wtf.csrf import CSRFProtect
+
 
 qr_2fa_utils = QR2FAUtils()
 read_secrets = ReadSecrets()
@@ -16,6 +18,7 @@ db_utils = DBUtils(read_secrets)
 crypto_utils = CryptoUtils()
 
 app = Flask(__name__)
+csrf = CSRFProtect(app) 
 crypto_utils.init_app(app)
 bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
