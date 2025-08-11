@@ -159,7 +159,7 @@ def register_user():
         connection, cursor = db_utils.connect()
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,key_salt,encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,key_salt, encrypted_user_key,is_admin_enabled))
         connection.commit()
-        message = f"The {user} was created correctly with {uri_totp} and basepath {basepath}"
+        message = f"The {user} was created correctly1111"
         return redirect(url_for('dashboard', message=message))
     except Exception as e:
         message = f"Error creating the user:" + str(e)

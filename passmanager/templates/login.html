@@ -8,7 +8,9 @@
     
 </head>
 <body>
-    <h2>Welcome to Flasky Password Manager</h2>
+    <main class="container">
+    {% block content %}
+    <h2 name="titlehome", id="titlehome">Welcome to Flasky Password Manager</h2>
     <form name="login" id="loginForm" action="login_validation" method="post">
         <fieldset><legend> Login </legend>
         <label for="user">Username:</label>
@@ -26,18 +28,16 @@
         <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/mp4">
         Your browser doest not support the video tag.
     </video>
-    <main class="container">
-        {% block content %}
-            {% if 'user' not in session %}
-                {% if message %}
-                    <div class="alert alert-danger" role="alert">
-                        {{message}}
-                    </div>
-                {% else %}
-                    <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
-                {% endif %}
-            {% endif %}
-        {% endblock %}
+    {% if 'user' not in session %}
+        {% if message %}
+            <div class="alert alert-danger" role="alert">
+                <p>{{message}}</p>
+            </div>
+        {% else %}
+            <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+        {% endif %}
+    {% endif %}
+    {% endblock %}
     </main> 
     <footer>
         <p>&copy; Flasky Password Manager. Todos los derechos reservados.</p>

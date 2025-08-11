@@ -7,9 +7,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <main class="container">
+    {% block content %}
         <h2>Logout</h2>
         <h1>Bye</h1>
-        <li><a href="{{url_for('login')}}">Log back in</a></li>     
+        <li><a href="{{url_for('login')}}">Log back in</a></li>
+    </main>
+    {% endblock %}
     <footer>
         <p>&copy; Flasky Password Manager. Todos los derechos reservados.</p>
     </footer>    
