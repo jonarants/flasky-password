@@ -1,4 +1,4 @@
-FROM nginx:latest
+FROM nginx:stable-perl
 
 COPY NGINX/default.conf /etc/nginx/conf.d/default.conf
 COPY NGINX/passmanager.conf /etc/nginx/conf.d/passmanager.conf
