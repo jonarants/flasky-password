@@ -2,6 +2,7 @@
 {% block content %}
 <h1> Manage Users </h1>
 <form name="manage_users" id="manageUsers" action="manage_users" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <p> By deleting a user you're also deleting all the entries created by that user in the database</p>
     <p> Select which users are going to be deleted, this action is not reversible</p>
     <table>

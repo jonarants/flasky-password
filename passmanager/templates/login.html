@@ -12,6 +12,7 @@
     {% block content %}
     <h2 name="titlehome", id="titlehome">Welcome to Flasky Password Manager</h2>
     <form name="login" id="loginForm" action="login_validation" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <fieldset><legend> Login </legend>
         <label for="user">Username:</label>
         <br>
@@ -40,7 +41,7 @@
     {% endblock %}
     </main> 
     <footer>
-        <p>&copy; Flasky Password Manager. Todos los derechos reservados.</p>
+        <p>&copy; Flasky Password Manager. All rights reserved.</p>
     </footer>    
 </body>
 </html>
