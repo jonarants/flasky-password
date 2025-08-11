@@ -22,6 +22,9 @@ memcached_client = base.Client(('memcached', 11211))
 app.config['SECRET_KEY'] = read_secrets.get_secret('flask_secret_key_secret') # Lectura del secret key
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=60) # Manejo de session timeout
 
+
+#CONSTANTS SONAR
+LOGIN = 'login.html'
 # Definicion del decorador befor_request que se usa para el timeout de sesiones
 
 @app.before_request
@@ -69,7 +72,7 @@ def login():
         memcached_client.delete(f"fernet_key:{session['user']}")
     session.pop('user', None)
     session.clear()
-    return render_template('login.html')
+    return render_template(LOGIN)
 
 @app.route('/login_validation', methods=['POST'])
 def login_validation():
@@ -96,14 +99,14 @@ def login_validation():
                 memcached_client.set(f"fernet_key:{session['user']}", decrypted_user_key, expire=60)
                 return redirect(url_for('dashboard'))
             else:
-                message = f"Usuario o contraseña invalidos"
-                return render_template('login.html', message = message)
+                message = "Usuario o contraseña invalidos"
+                return render_template(LOGIN, message = message)
         else:
             message = f"Usuario o contraseña invalidos"
-            return render_template('login.html', message = message)
+            return render_template(LOGIN, message = message)
     except Exception as e:
         message = "Error:" + str(e)
-        return render_template('login.html', message = message)
+        return render_template(LOGIN, message = message)
     finally:
         db_utils.disconnect(connection, cursor) 
 
@@ -153,8 +156,6 @@ def register_user():
     derivation_key = crypto_utils.get_key(password,key_salt)
     encrypted_user_key = crypto_utils.encrypt_derivation(derivation_key, user_encryption_key)
 
-
-    #is_valid = bcrypt.check_password_hash(hashed_password, password)
     try: 
         connection, cursor = db_utils.connect()
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,key_salt,encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,key_salt, encrypted_user_key,is_admin_enabled))
@@ -162,7 +163,7 @@ def register_user():
         message = f"The {user} was created correctly1111"
         return redirect(url_for('dashboard', message=message))
     except Exception as e:
-        message = f"Error creating the user:" + str(e)
+        message = f"Error creating the user: {e}"
         return redirect(url_for('dashboard', message=message))
     finally:
       db_utils.disconnect(connection, cursor)
@@ -314,7 +315,7 @@ def show_tables():
                         'id': entry['id'],
                         'website': entry['website'],
                         'user': entry['user'],
-                        'password': "[Error decrypting password or incorrect key]", # message para el usuario
+                        'password': f"[Error decrypting password or incorrect key {decrypt_error}]", # message para el usuario
                         'owner': entry['owner']
                     })
             else:
