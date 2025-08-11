@@ -1,14 +1,16 @@
 from datetime import timedelta
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash, current_app
 from flask_bcrypt import Bcrypt #
 from functools import wraps
 from pymemcache.client import base
-
+from qr2fa.qr_2fa_utils import QR2FAUtils
+import os
 # Refactors
 from secrets.read_secrets import ReadSecrets
 from db.db_utils import DBUtils
 from crypto.crypto_utils import CryptoUtils
 
+qr_2fa_utils = QR2FAUtils()
 read_secrets = ReadSecrets()
 db_utils = DBUtils(read_secrets)
 crypto_utils = CryptoUtils()
@@ -130,9 +132,18 @@ def register_user():
 
     user = request.form['user']
     password = request.form['password']
-    two_factor_secret = "placeholder data"#request.form['two_factor_secret']
+
     two_factor_enabled = request.form.get('two_factor_enabled')
     two_factor_enabled = (two_factor_enabled == "Enabled")
+    if two_factor_enabled:
+        two_factor_secret = qr_2fa_utils.create_secret_for_2fa() # Hace falta encryptarlo para almacenarlo en la BD
+        base_path = os.path.dirname(os.path.abspath(__file__)) 
+        basepath = os.path.join(base_path, 'static')
+        uri_totp = qr_2fa_utils.generate_uri(two_factor_secret, user)
+        qr_2fa_utils.generate_uri_qrcode(uri_totp, basepath)
+    else:
+        two_factor_secret = None
+    
     is_admin_enabled = request.form.get('is_admin_enabled')
     is_admin_enabled = (is_admin_enabled == "Enabled")
     
@@ -142,12 +153,13 @@ def register_user():
     derivation_key = crypto_utils.get_key(password,key_salt)
     encrypted_user_key = crypto_utils.encrypt_derivation(derivation_key, user_encryption_key)
 
+
     #is_valid = bcrypt.check_password_hash(hashed_password, password)
     try: 
         connection, cursor = db_utils.connect()
         cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,key_salt,encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,key_salt, encrypted_user_key,is_admin_enabled))
         connection.commit()
-        message = f"The {user} was created correctly"
+        message = f"The {user} was created correctly with {uri_totp} and basepath {basepath}"
         return redirect(url_for('dashboard', message=message))
     except Exception as e:
         message = f"Error creating the user:" + str(e)
