@@ -12,7 +12,8 @@ admin_password = 'password'
 # y luego inicializar Bcrypt con esa aplicación.
 
 # Opcional pero buena práctica: establecer un SECRET_KEY para Flask
-app.config['SECRET_KEY'] = 'una_clave_secreta_para_este_script_temporal'
+enter_password = input ("Enter the password: ")
+app.config['SECRET_KEY'] = enter_password
 # Ahora, 'bcrypt' en tu script se referirá a esta instancia de Flask-Bcrypt
 
 
