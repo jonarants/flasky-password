@@ -2,6 +2,7 @@
 {% block content %}
 <h2>Website's info</h2>
     <form name="formulario"id="formulario"action="website_info" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <fieldset><legend> Enter the information of the website </legend>
         <label for="website">Website:</label>
         <br>
