@@ -1,2 +1,4 @@
 password-admin/
-wsl/
+venvwsl/
+.sonar/
+venv/
