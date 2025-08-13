@@ -14,11 +14,14 @@
     </video>
     <main class="container">
     {% block content %}
-        <h2>Logout</h2>
-        <h1>Bye</h1>
-        <ul class="logout">
-            <li><a href="{{url_for('login')}}">Log back in</a></li>
-        </ul>
+        <div class="img-dashboard">    
+            <h2>Logout</h2>
+            <h1>Bye</h1>
+            <ul class="logout">
+                <li><a href="{{url_for('login')}}">Log back in</a></li>
+            </ul>
+            <img src="{{ url_for('static', filename='images/officecat.jpg') }}" alt="office cat meme">
+        </div>
     </main>
     {% endblock %}
     <footer>
