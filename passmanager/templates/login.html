@@ -30,15 +30,14 @@
         <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/mp4">
         Your browser doest not support the video tag.
     </video>
-    {% if 'user' not in session %}
-        {% if message %}
+    {% if message %}
             <div class="alert-message" role="alert">
                 <p>{{message}}</p>
-            </div>
-        {% else %}
-            <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
-        {% endif %}
+            </div> 
     {% endif %}
+        <div class="img-dashboard">
+            <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+        </div>
     {% endblock %}
     </main> 
     <footer>
