@@ -38,7 +38,7 @@
         {% block content %}
             {% if 'user' in session %}
                 <h2>Welcome to Flasky Password Manager</h2>
-                 <p> Welcome back {{ session['user'] }} </p>
+                 <p class="welcome-message"> Welcome back {{ session['user'] }} </p>
             {% endif %}
             {% if message %}
                 <div class="alert-message" role="alert">

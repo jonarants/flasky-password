@@ -72,6 +72,30 @@ nav ul li a:focus {
 
 /* Classes
 /* Contenedor Principal para Dashboard y Páginas con Contenido Estructurado */
+
+main ul, .logout {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: fit-content;
+    max-width: 0 auto;
+}
+
+main ul, .logout li {
+    margin: 0 15px;
+}
+
+main ul, .logout li a{
+    color: var(--text-color-light);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .container {
     flex-grow: 1; /* Permite que el contenedor crezca y ocupe el espacio disponible */
     max-width: 960px; /* Ancho máximo para el contenido */
@@ -88,9 +112,12 @@ nav ul li a:focus {
     justify-content: center; /* Centra verticalmente si hay espacio extra */
 }
 .alert-message {
-    background-color: #333333;
-    color: #D32F2F;
-    border: 1px solid #BC7FCD;
+    color: #6A057F;
+    font-weight: bold;
+}
+
+.welcome-message {
+    color: #6A057F;
     font-weight: bold;
 }
 

@@ -22,10 +22,11 @@
         <br>
         <input type="password" name="password" id="password" value="" placeholder="password" required>
         <br>
-        <input type="submit" value="Enviar"/>
+        <input type="submit" value="Submit"/>
         </fieldset>
     </form>
     <video autoplay muted loop id="background-video">
+        <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/webm">
         <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/mp4">
         Your browser doest not support the video tag.
     </video>
