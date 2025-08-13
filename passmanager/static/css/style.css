@@ -70,6 +70,7 @@ nav ul li a:focus {
     color: var(--primary-purple);
 }
 
+/* Classes
 /* Contenedor Principal para Dashboard y Páginas con Contenido Estructurado */
 .container {
     flex-grow: 1; /* Permite que el contenedor crezca y ocupe el espacio disponible */
@@ -86,6 +87,13 @@ nav ul li a:focus {
     align-items: center; /* Centra horizontalmente los ítems (como la imagen) */
     justify-content: center; /* Centra verticalmente si hay espacio extra */
 }
+.alert-message {
+    background-color: #333333;
+    color: #D32F2F;
+    border: 1px solid #BC7FCD;
+    font-weight: bold;
+}
+
 
 /* --- ESTILOS PARA CENTRAR FORMULARIOS Y MENSAJES (Login, Register, Result, Error, etc.) --- */
 form, .message-box {
