@@ -20,7 +20,8 @@
             <div class="alert-message" role="alert">
                 {{message}}
             </div>
+            <img src="{{ url_for('static', filename='images/catpc.jpg') }}" alt="cat pc meme">
         {% else %}
-            <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
+            <img src="{{ url_for('static', filename='images/catpc.jpg') }}" alt="cat pc meme">
         {% endif %}    
 {% endblock %}
