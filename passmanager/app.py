@@ -195,11 +195,10 @@ def register_user():
 
 # Administracion de usuarios
 # Eliminar usuarios
-
-@app.route('/manage_users', methods = ['GET', 'POST'])
+@app.route('/manage_users', methods =['GET'])
 @login_required
 @is_admin
-def manage_users():
+def get_manage_users():
     connection = None
     cursor = None
     users = []
@@ -216,27 +215,35 @@ def manage_users():
             return render_template('manage_users.html', message=message)
         finally:
             db_utils.disconnect(connection,cursor)
-            
-    elif request.method == 'POST':
-        users_to_delete = request.form.getlist('delete_users_ids')
-        if not users_to_delete:
-            message = "No users selected for deletion"
+
+@app.route('/manage_users', methods = ['POST'])
+@login_required
+@is_admin
+def manage_users():
+    connection = None
+    cursor = None
+    users = []
+    message = None
+    connection, cursor = db_utils.connect()
+    users_to_delete = request.form.getlist('delete_users_ids')
+    if not users_to_delete:
+        message = "No users selected for deletion"
+        return redirect(url_for('manage_users', message=message))
+    else:
+        try:
+            users =','.join(['%s'] * len(users_to_delete))
+            sql_query = f"DELETE FROM users WHERE user in ({users})"
+            cursor.execute(sql_query, tuple(users_to_delete))
+            connection.commit()
+            message = f"Sucessfully deleted {len(users_to_delete)} user(s)."
             return redirect(url_for('manage_users', message=message))
-        else:
-            try:
-                users =','.join(['%s'] * len(users_to_delete))
-                sql_query = f"DELETE FROM users WHERE user in ({users})"
-                cursor.execute(sql_query, tuple(users_to_delete))
-                connection.commit()
-                message = f"Sucessfully deleted {len(users_to_delete)} user(s)."
-                return redirect(url_for('manage_users', message=message))
-            except Exception as e:
-                message = f"Error deleting users {e}"
-                if connection:
-                    connection.rollback()
-                return redirect(url_for('manage_users', message=message))
-            finally:
-                db_utils.disconnect(connection, cursor)
+        except Exception as e:
+            message = f"Error deleting users {e}"
+            if connection:
+                connection.rollback()
+            return redirect(url_for('manage_users', message=message))
+        finally:
+            db_utils.disconnect(connection, cursor)
 
 @app.route('/reset_password', methods=['POST','GET'])
 @login_required
