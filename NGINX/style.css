@@ -1,0 +1,46 @@
+html {
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-purple: #6A057F;
+    --text-color-dark: #333333; 
+    --background-light: #d6d1d6; 
+
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-light);
+    color: var(--text-color-dark);
+    line-height: 1.6;
+    min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura de la ventana */
+    display: flex; /* Usamos flex para controlar el flujo general */
+    flex-direction: column; /* Apila elementos verticalmente: header, main, (footer) */
+    box-sizing: border-box; /* Asegura que padding no añada ancho */
+    justify-content: center;
+
+}
+
+h1 {
+    color: var(--primary-purple);
+    margin: 25px auto;
+    font-size: 2.2em;
+    width: 100%;
+    max-width: 400px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border-color: red;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+table th, table td {
+    border: 1px solid red;
+    padding: 12px 15px;
+    text-align: left;
+}

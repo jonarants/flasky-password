@@ -2,12 +2,13 @@
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from crypto.crypto_utils import CryptoUtils
+from flask_wtf.csrf import CSRFProtect
 app = Flask(__name__)
 crypto_utils = CryptoUtils()
 crypto_utils.init_app(app)
 # Contraseña que quieres usar para 'admin'
-admin_password = 'password'
-
+admin_password = input ("Enter the admin password")
+csrf = CSRFProtect(app)
 # ¡CRÍTICO! Inicializar una aplicación Flask (aunque sea dummy)
 # y luego inicializar Bcrypt con esa aplicación.
 
