@@ -1,5 +1,14 @@
 FROM mysql:oraclelinux9
 
+RUN microdnf update -y \
+    && microdnf install -y shadow-utils
+
+# Now you can safely use the commands to create the user and group
+RUN groupadd --system nonroot \
+    && useradd --system --gid nonroot nonroot
+
+USER nonroot
+
 EXPOSE 3306
 
 VOLUME /var/lib/mysql
