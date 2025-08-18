@@ -84,6 +84,8 @@ def login_validation():
     password = request.form['password']
     connection = None
     cursor = None
+    twofatoken = request.form['2fatoken']
+    
     try: 
         connection, cursor = db_utils.connect()
         cursor.execute("SELECT * FROM users WHERE user = %s",(user,))
@@ -101,7 +103,17 @@ def login_validation():
                 derivation_key = crypto_utils.get_key(password, key_salt)
                 decrypted_user_key = crypto_utils.decrypt_derivation(derivation_key, user_encryption_key)
                 memcached_client.set(f"fernet_key:{session['user']}", decrypted_user_key, expire=60)
-                return redirect(url_for('dashboard'))
+                two_fa_secret=user_record['two_factor_secret']
+                if twofatoken =='' and two_fa_secret == None:
+                    return redirect(url_for('dashboard'))
+                else:
+                    if qr_2fa_utils.validate_token(twofatoken, two_fa_secret):
+                        return redirect(url_for('dashboard'))
+                    else:
+                        message = "Usuario o contraseña o 2FA invalidos"
+                        return render_template(LOGIN, message = message)
+
+                
             else:
                 message = "Usuario o contraseña invalidos"
                 return render_template(LOGIN, message = message)

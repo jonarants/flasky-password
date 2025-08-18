@@ -10,6 +10,7 @@
 <body>
     <main class="container">
     {% block content %}
+    
     <h2 name="titlehome", id="titlehome">Welcome to Flasky Password Manager</h2>
     <form name="login" id="loginForm" action="login_validation" method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -21,6 +22,10 @@
         <label for="pasword">Password:</label>
         <br>
         <input type="password" name="password" id="password" value="" placeholder="password" required>
+        <br>
+        <label for="2fatoken">2FA token</label>
+        <br>        
+        <input type="text" name="2fatoken" id="2fatoken" value="" placeholder="2FA optional" inputmode="numeric" pattern="[0-9]*">
         <br>
         <input type="submit" value="Submit"/>
         </fieldset>
