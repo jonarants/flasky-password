@@ -22,8 +22,12 @@ csrf = CSRFProtect(app)
 crypto_utils.init_app(app)
 bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
-app.config['SECRET_KEY'] = read_secrets.get_secret('flask_secret_key_secret') # Lectura del secret key
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=60) # Manejo de session timeout
+
+app.config.from_mapping(
+    SECRET_KEY= read_secrets.get_secret('flask_secret_key_secret') #Carga de secreto de app
+    PERMANENT_SESSION_LIFETIME = timedelta(seconds=60) # Manejo de session timeout
+)
+
 
 
 #CONSTANTS SONAR
