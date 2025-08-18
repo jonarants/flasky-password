@@ -122,7 +122,7 @@ def login_validation():
                 message = "Usuario o contraseña invalidos"
                 return render_template(LOGIN, message = message)
         else:
-            message = f"Usuario o contraseña invalidos"
+            message = "Usuario o contraseña invalidos"
             return render_template(LOGIN, message = message)
     except Exception as e:
         message = "Error:" + str(e)
@@ -220,7 +220,7 @@ def manage_users():
     elif request.method == 'POST':
         users_to_delete = request.form.getlist('delete_users_ids')
         if not users_to_delete:
-            message = f"No users selected for deletion"
+            message = "No users selected for deletion"
             return redirect(url_for('manage_users', message=message))
         else:
             try:
@@ -361,5 +361,5 @@ def show_tables():
         db_utils.disconnect(connection, cursor)
 
 if __name__=='__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True) #Pending to change
 
