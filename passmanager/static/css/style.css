@@ -108,6 +108,11 @@ nav ul li a:focus {
     align-items: center;
 }
 
+.img-dashboard p {
+    color: #6A057F;
+    font-weight: bold;
+}
+
 .container {
     flex-grow: 1; /* Permite que el contenedor crezca y ocupe el espacio disponible */
     max-width: 960px; /* Ancho máximo para el contenido */

@@ -1,5 +1,15 @@
 {% extends "dashboard.html" %}
 {% block content %}
+{% if qr_path %}
+    <div class="img-dashboard">
+        <img src="{{ url_for('static', filename='images/my_qr.png') }}" alt="QR_CODE">
+        <p>{{message}}</p>
+    </div>
+{% elif message %}
+    <div class="img-dashboard">
+        <p>{{message}}</p>
+    </div>
+{% else %}
     <form name="login" id="formulario" action="register_user" method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <fieldset><legend> Enter the info for the user to save in the password manager </legend>
@@ -18,4 +28,6 @@
         <input type="submit" value="Enviar"/>
         </fieldset>
     </form>
+
+{% endif %}
 {% endblock %}
