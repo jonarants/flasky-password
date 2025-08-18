@@ -24,7 +24,7 @@ bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
 
 app.config.from_mapping(
-    SECRET_KEY= read_secrets.get_secret('flask_secret_key_secret') #Carga de secreto de app
+    SECRET_KEY= read_secrets.get_secret('flask_secret_key_secret'), #Carga de secreto de app
     PERMANENT_SESSION_LIFETIME = timedelta(seconds=60) # Manejo de session timeout
 )
 
