@@ -13,7 +13,9 @@ admin_password = 'password'
 
 # Opcional pero buena práctica: establecer un SECRET_KEY para Flask
 enter_password = input ("Enter the password: ")
-app.config['SECRET_KEY'] = enter_password
+app.config.from_mapping(
+    SECRET_KEY = enter_password
+)
 # Ahora, 'bcrypt' en tu script se referirá a esta instancia de Flask-Bcrypt
 
 

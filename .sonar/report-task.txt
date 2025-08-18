@@ -1,6 +1,6 @@
-projectKey=test
+projectKey=ueu
 serverUrl=http://localhost:9000
 serverVersion=25.8.0.112029
-dashboardUrl=http://localhost:9000/dashboard?id=test
-ceTaskId=94aad55a-1a56-45c2-a7a5-fa3b1c9932bd
-ceTaskUrl=http://localhost:9000/api/ce/task?id=94aad55a-1a56-45c2-a7a5-fa3b1c9932bd
+dashboardUrl=http://localhost:9000/dashboard?id=ueu
+ceTaskId=97fce869-45ed-4fd3-b5b8-8b5eaa6f3bd2
+ceTaskUrl=http://localhost:9000/api/ce/task?id=97fce869-45ed-4fd3-b5b8-8b5eaa6f3bd2
