@@ -285,7 +285,7 @@ def reset_password():
                 message = f'Password changed for user {current_user}'
                 return redirect(url_for('dashboard', message=message))
     except Exception as e:
-        message = f"Error when updating the password:" + str(e)
+        message = f"Error when updating the password:{e}"
         return redirect(url_for('reset_password', message=message))
     finally:
         db_utils.disconnect(connection, cursor)
