@@ -245,79 +245,80 @@ def manage_users():
         finally:
             db_utils.disconnect(connection, cursor)
 
-@app.route('/reset_password', methods=['POST','GET'])
+@app.route('/reset_password', methods=['GET'])
+@login_required
+def get_reset_password():
+    message = request.args.get('message')
+    return render_template('reset_password.html',message=message)
+
+
+@app.route('/reset_password', methods=['POST'])
 @login_required
 def reset_password():
-    if request.method == 'GET':
-        message = request.args.get('message')
-        return render_template('reset_password.html')
-    elif request.method == 'POST':
-        current_password = request.form['current_password']
-        new_password = request.form['new_password']
-        confirm_new_password = request.form['confirm_new_password']
-        current_user = session['user']
-        try:
-            connection, cursor = db_utils.connect()
-            cursor.execute("SELECT * FROM users WHERE user = %s",(current_user,))
-            user_record = cursor.fetchone()
-            if user_record:
-                if crypto_utils.validate_password(user_record['password'], current_password) and (new_password == confirm_new_password):
-                        
-                    #Desencripta la clave vieja
-                    derivation_key_old = crypto_utils.get_key(current_password, user_record['key_salt'])
-                    decrypted_user_key = crypto_utils.decrypt_derivation (derivation_key_old, user_record['encrypted_user_key'])
-                    
-                    new_hashed_password = crypto_utils.hash_password(new_password)
-                    new_key_salt = crypto_utils.create_salt()
-                    derivation_key_new = crypto_utils.get_key(new_password,new_key_salt)
-                    encrypted_user_key_new = crypto_utils.encrypt_derivation(derivation_key_new, decrypted_user_key)
-                    cursor.execute("""
-                        UPDATE users
-                        SET password = %s,
-                            key_salt = %s,
-                            encrypted_user_key = %s
-                        WHERE user = %s 
-                    """, (new_hashed_password, new_key_salt, encrypted_user_key_new, current_user))
-                    connection.commit()
-                    message = f'Password changed for user {current_user}'
-                    return redirect(url_for('dashboard', message=message))
-        except Exception as e:
-            message = f"Error when updating the password:" + str(e)
-            return redirect(url_for('reset_password', message=message))
-        finally:
-            db_utils.disconnect(connection, cursor)
+    current_password = request.form['current_password']
+    new_password = request.form['new_password']
+    confirm_new_password = request.form['confirm_new_password']
+    current_user = session['user']
+    try:
+        connection, cursor = db_utils.connect()
+        cursor.execute("SELECT * FROM users WHERE user = %s",(current_user,))
+        user_record = cursor.fetchone()
+        if user_record:
+            if crypto_utils.validate_password(user_record['password'], current_password) and (new_password == confirm_new_password):
+
+                #Desencripta la clave vieja
+                derivation_key_old = crypto_utils.get_key(current_password, user_record['key_salt'])
+                decrypted_user_key = crypto_utils.decrypt_derivation (derivation_key_old, user_record['encrypted_user_key'])
+
+                new_hashed_password = crypto_utils.hash_password(new_password)
+                new_key_salt = crypto_utils.create_salt()
+                derivation_key_new = crypto_utils.get_key(new_password,new_key_salt)
+                encrypted_user_key_new = crypto_utils.encrypt_derivation(derivation_key_new, decrypted_user_key)
+                cursor.execute("""
+                    UPDATE users
+                    SET password = %s,
+                        key_salt = %s,
+                        encrypted_user_key = %s
+                    WHERE user = %s 
+                """, (new_hashed_password, new_key_salt, encrypted_user_key_new, current_user))
+                connection.commit()
+                message = f'Password changed for user {current_user}'
+                return redirect(url_for('dashboard', message=message))
+    except Exception as e:
+        message = f"Error when updating the password:" + str(e)
+        return redirect(url_for('reset_password', message=message))
+    finally:
+        db_utils.disconnect(connection, cursor)
         
-
-
+@app.route('/website_info', methods = ['GET'])
+@login_required
+def get_website_info():
+        message = request.args.get('message')
+        return render_template(WEBSITE_INFO, message=message)
 
 # Captura de informacion de sitios web
 
-@app.route('/website_info', methods=['POST','GET'])
+@app.route('/website_info', methods=['POST'])
 @login_required
 def website_info():
-    if request.method == 'GET':
-        message = request.args.get('message')
-        return render_template(WEBSITE_INFO)
-    elif request.method == 'POST':
-        username_logged_in = session['user']
-        user = request.form['user']
-        password = request.form['password']
-        website = request.form['website']
-
-        memcached_key_name= f"fernet_key:{username_logged_in}"
-        encryption_key = memcached_client.get(memcached_key_name)
-        password = crypto_utils.encrypt_password(encryption_key,password)
-        try:
-            connection, cursor = db_utils.connect()
-            cursor.execute('INSERT INTO websites_info (website,user,password,owner) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
-            connection.commit()
-            message=f"The website for {website} was added successfully"
-            return render_template(WEBSITE_INFO,message=message)
-        except Exception as e:
-            message="Error when trying to insert the information into the table:" + str(e)
-            return render_template(WEBSITE_INFO,message=message)
-        finally:
-            db_utils.disconnect(connection, cursor)
+    username_logged_in = session['user']
+    user = request.form['user']
+    password = request.form['password']
+    website = request.form['website']
+    memcached_key_name= f"fernet_key:{username_logged_in}"
+    encryption_key = memcached_client.get(memcached_key_name)
+    password = crypto_utils.encrypt_password(encryption_key,password)
+    try:
+        connection, cursor = db_utils.connect()
+        cursor.execute('INSERT INTO websites_info (website,user,password,owner) VALUES(%s,%s,%s,%s)',(website, user, password, username_logged_in))
+        connection.commit()
+        message=f"The website for {website} was added successfully"
+        return render_template(WEBSITE_INFO,message=message)
+    except Exception as e:
+        message="Error when trying to insert the information into the table:" + str(e)
+        return render_template(WEBSITE_INFO,message=message)
+    finally:
+        db_utils.disconnect(connection, cursor)
 
 # Muestra las tablas de información desencriptada
 @app.route('/show_tables')
