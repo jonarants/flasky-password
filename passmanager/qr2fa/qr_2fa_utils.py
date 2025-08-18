@@ -23,6 +23,9 @@ class QR2FAUtils():
         return qr_path
     
     def generate_uri(self, secret, user):
+        """
+        Generates the uri using the secret and the user
+        """
         uri_totp = pyotp.TOTP(secret).provisioning_uri(name=user, issuer_name="Flasky")
         return uri_totp
     

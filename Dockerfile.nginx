@@ -1,14 +1,13 @@
 FROM nginx:stable-perl
 
-RUN addgroup -S nonroot \
-    && adduser -S nonroot -G nonroot
+RUN addgroup --system nonroot \
+    && adduser --system --ingroup nonroot nonroot
 # Switch to nonroot user
-USER nonroot
 
 
-COPY --chown=nonroot:nonroot NGINX/default.conf /etc/nginx/conf.d/default.conf
-COPY --chown=nonroot:nonroot NGINX/passmanager.conf /etc/nginx/conf.d/passmanager.conf
-COPY --chown=nonroot:nonroot NGINX/index.html /usr/share/nginx/html/index.html
+COPY --chown=root:root --chmod=755 NGINX/default.conf /etc/nginx/conf.d/default.conf
+COPY --chown=root:root --chmod=755 NGINX/passmanager.conf /etc/nginx/conf.d/passmanager.conf
+COPY --chown=root:root --chmod=755 NGINX/index.html /usr/share/nginx/html/index.html
 
 # Switch to nonroot user
 USER nonroot
