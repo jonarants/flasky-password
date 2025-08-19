@@ -8,6 +8,7 @@ import os
 # Refactors
 from secrets.read_secrets import ReadSecrets
 from db.db_utils import DBUtils
+from login.login_utils import LoginUtils
 from crypto.crypto_utils import CryptoUtils
 from flask_wtf.csrf import CSRFProtect
 
@@ -16,6 +17,7 @@ qr_2fa_utils = QR2FAUtils()
 read_secrets = ReadSecrets()
 db_utils = DBUtils(read_secrets)
 crypto_utils = CryptoUtils()
+login_utils = LoginUtils()
 
 app = Flask(__name__)
 csrf = CSRFProtect(app) 
@@ -94,38 +96,29 @@ def login_validation():
         connection, cursor = db_utils.connect()
         cursor.execute("SELECT * FROM users WHERE user = %s",(user,))
         user_record = cursor.fetchone()
-        if user_record:
-            if crypto_utils.validate_password(user_record['password'], password): #Compara los hashes para la autenticacion
-                session['user'] = user_record['user']
-                if user_record['admin'] == 1:
-                    session['admin'] = True
-                else:
-                    session['admin'] = False
-                session.permanent = True
-                user_encryption_key = user_record['encrypted_user_key']
-                key_salt = user_record['key_salt']
-                derivation_key = crypto_utils.get_key(password, key_salt)
-                decrypted_user_key = crypto_utils.decrypt_derivation(derivation_key, user_encryption_key)
-                memcached_client.set(f"fernet_key:{session['user']}", decrypted_user_key, expire=60)
-                two_fa_secret=user_record['two_factor_secret']
-                if twofatoken =='' and two_fa_secret == None:
+        if user_record and crypto_utils.validate_password(user_record['password'], password):
+            session['user'] = user_record['user']
+            session['admin'] = login_utils.user_auth_role(user_record) # Sets user role for views
+            session.permanent = True
+            user_encryption_key = user_record['encrypted_user_key']
+            key_salt = user_record['key_salt']
+            derivation_key = crypto_utils.get_key(password, key_salt)
+            decrypted_user_key = crypto_utils.decrypt_derivation(derivation_key, user_encryption_key)
+            memcached_client.set(f"fernet_key:{session['user']}", decrypted_user_key, expire=60)
+            two_fa_secret=user_record['two_factor_secret']
+            if twofatoken =='' and two_fa_secret == None:
+                return redirect(url_for('dashboard'))
+            else:
+                if qr_2fa_utils.validate_token(twofatoken, two_fa_secret):
                     return redirect(url_for('dashboard'))
                 else:
-                    if qr_2fa_utils.validate_token(twofatoken, two_fa_secret):
-                        return redirect(url_for('dashboard'))
-                    else:
-                        message = "Usuario o contraseña o 2FA invalidos"
-                        return render_template(LOGIN, message = message)
-
-                
-            else:
-                message = "Usuario o contraseña invalidos"
-                return render_template(LOGIN, message = message)
+                    message = "Invalid user/password"
+                    return render_template(LOGIN, message = message)
         else:
-            message = "Usuario o contraseña invalidos"
+            message = "Invalid user/password"
             return render_template(LOGIN, message = message)
     except Exception as e:
-        message = "Error:" + str(e)
+        message = f"Error: {e}"
         return render_template(LOGIN, message = message)
     finally:
         db_utils.disconnect(connection, cursor) 
@@ -369,5 +362,5 @@ def show_tables():
         db_utils.disconnect(connection, cursor)
 
 if __name__=='__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True) #Pending to change
+    app.run(host='0.0.0.0', port=5000) #debug=True) #Pending to change
 
