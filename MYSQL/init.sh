@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
     two_factor_enabled BOOLEAN DEFAULT FALSE,
     key_salt BLOB NOT NULL,
     encrypted_user_key VARCHAR (255) NOT NULL,
+    qr_code MEDIUMBLOB UNIQUE,
     admin BOOLEAN DEFAULT FALSE
 );
 
@@ -37,13 +38,14 @@ CREATE TABLE IF NOT EXISTS websites_info (
     FOREIGN KEY (owner) REFERENCES users(user) ON DELETE CASCADE
 );
 
-INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, admin) VALUES (
+INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, qr_code, admin) VALUES (
     'admin',
     '${ADMIN_HASH}',
     NULL,
     FALSE,
     X'${SALT_HASH}',
     '${ENCRYPTED_USER_KEY}',
+    NULL,
     TRUE
 );
 EOSQL

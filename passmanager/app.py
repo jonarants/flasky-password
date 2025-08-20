@@ -166,6 +166,8 @@ def register_user():
         basepath = os.path.join(base_path, 'static')
         uri_totp = qr_2fa_utils.generate_uri(two_factor_secret, user)
         qr_path = qr_2fa_utils.generate_uri_qrcode(uri_totp, basepath)
+        qr_blob=qr_2fa_utils.create_blob_qr()
+        qr_2fa_utils.clean_qr_code()
     else:
         two_factor_secret = None
     
