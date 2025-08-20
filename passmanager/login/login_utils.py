@@ -6,10 +6,7 @@ class LoginUtils:
 
     def user_auth_role(self, user_record):
         if user_record['admin'] == 1:
-            self.session['admin'] = True
+            return True
         else:
-            self.session['admin'] = False
+            return False
 
-        session = self.session['admin']
-
-        return session
