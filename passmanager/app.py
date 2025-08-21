@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, date
 from flask import Flask, render_template, request, session, redirect, url_for, flash, current_app
 from flask_bcrypt import Bcrypt #
 from functools import wraps
@@ -35,6 +35,8 @@ app.config.from_mapping(
 #CONSTANTS SONAR
 LOGIN = 'login.html'
 WEBSITE_INFO = 'website_info.html'
+SHOW_TABLES = 'show_tables.html'
+SHOW_ALL_TABLES = 'show_all_tables.html'
 # Definicion del decorador befor_request que se usa para el timeout de sesiones
 
 @app.before_request
@@ -102,15 +104,12 @@ def login_validation():
     finally:
         db_utils.disconnect(connection, cursor)
 
-    two_fa_secret=user_record['two_factor_secret']
-
     if not user_record:
         message = "Invalid user/password"
         return render_template(LOGIN, message = message)
     if not crypto_utils.validate_password(user_record['password'], password):
         message = "Invalid user/password"
         return render_template(LOGIN, message = message)
-    
     
     session['user'] = user_record['user']
     session['admin'] = login_utils.user_auth_role(user_record) # Sets user role for views
@@ -120,7 +119,8 @@ def login_validation():
     derivation_key = crypto_utils.get_key(password, key_salt)
     decrypted_user_key = crypto_utils.decrypt_derivation(derivation_key, user_encryption_key)
     memcached_client.set(f"fernet_key:{session['user']}", decrypted_user_key, expire=60)
-    
+    two_fa_secret=user_record['two_factor_secret']
+
     if two_fa_secret == None:
         return redirect(url_for('dashboard'))
 
@@ -160,17 +160,16 @@ def register_user():
 
     two_factor_enabled = request.form.get('two_factor_enabled')
     two_factor_enabled = (two_factor_enabled == "Enabled")
+
     if two_factor_enabled:
         two_factor_secret = qr_2fa_utils.create_secret_for_2fa() # Hace falta encryptarlo para almacenarlo en la BD
         base_path = os.path.dirname(os.path.abspath(__file__)) 
         basepath = os.path.join(base_path, 'static')
         uri_totp = qr_2fa_utils.generate_uri(two_factor_secret, user)
         qr_path = qr_2fa_utils.generate_uri_qrcode(uri_totp, basepath)
-        qr_blob=qr_2fa_utils.create_blob_qr()
-        qr_2fa_utils.clean_qr_code()
     else:
         two_factor_secret = None
-    
+
     is_admin_enabled = request.form.get('is_admin_enabled')
     is_admin_enabled = (is_admin_enabled == "Enabled")
     
@@ -182,7 +181,7 @@ def register_user():
 
     try: 
         connection, cursor = db_utils.connect()
-        cursor.execute('INSERT INTO users (user,password,two_factor_secret,two_factor_enabled,key_salt,encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user,hashed_password,two_factor_secret,two_factor_enabled,key_salt, encrypted_user_key,is_admin_enabled))
+        cursor.execute('INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user, hashed_password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, is_admin_enabled))
         connection.commit()
         message = f"The user: {user} Was created correctly"
         if two_factor_enabled:
@@ -193,6 +192,7 @@ def register_user():
         message = f"Error creating the user: {e}"
         return redirect(url_for('dashboard', message=message))
     finally:
+      qr_2fa_utils.clean_qr_code()
       db_utils.disconnect(connection, cursor)
 
 # Administracion de usuarios
@@ -206,17 +206,17 @@ def get_manage_users():
     users = []
     message = None
     connection, cursor = db_utils.connect()
-    if request.method == 'GET':
-        try:
-            cursor.execute("SELECT id, user from users")
-            users = cursor.fetchall()
-            message = request.args.get('message')
-            return render_template('manage_users.html', users=users, message=message)
-        except Exception as e:
-            message = f"No valid information found, error{e}"
-            return render_template('manage_users.html', message=message)
-        finally:
-            db_utils.disconnect(connection,cursor)
+
+    try:
+        cursor.execute("SELECT id, user, admin, two_factor_enabled from users")
+        users = cursor.fetchall()
+        message = request.args.get('message')
+        return render_template('manage_users.html', users=users, message=message)
+    except Exception as e:
+        message = f"No valid information found, error{e}"
+        return render_template('manage_users.html', message=message)
+    finally:
+        db_utils.disconnect(connection,cursor)
 
 @app.route('/manage_users', methods = ['POST'])
 @login_required
@@ -231,21 +231,20 @@ def manage_users():
     if not users_to_delete:
         message = "No users selected for deletion"
         return redirect(url_for('manage_users', message=message))
-    else:
-        try:
-            users =','.join(['%s'] * len(users_to_delete))
-            sql_query = f"DELETE FROM users WHERE user in ({users})"
-            cursor.execute(sql_query, tuple(users_to_delete))
-            connection.commit()
-            message = f"Sucessfully deleted {len(users_to_delete)} user(s)."
-            return redirect(url_for('manage_users', message=message))
-        except Exception as e:
-            message = f"Error deleting users {e}"
-            if connection:
-                connection.rollback()
-            return redirect(url_for('manage_users', message=message))
-        finally:
-            db_utils.disconnect(connection, cursor)
+    try:
+        users =','.join(['%s'] * len(users_to_delete))
+        sql_query = f"DELETE FROM users WHERE user in ({users})"
+        cursor.execute(sql_query, tuple(users_to_delete))
+        connection.commit()
+        message = f"Sucessfully deleted {len(users_to_delete)} user(s)."
+        return redirect(url_for('manage_users', message=message))
+    except Exception as e:
+        message = f"Error deleting users {e}"
+        if connection:
+            connection.rollback()
+        return redirect(url_for('manage_users', message=message))
+    finally:
+        db_utils.disconnect(connection, cursor)
 
 @app.route('/reset_password', methods=['GET'])
 @login_required
@@ -322,6 +321,11 @@ def website_info():
     finally:
         db_utils.disconnect(connection, cursor)
 
+@app.route('/show_all_tables')
+@login_required
+def show_all_tables():
+    return render_template('show_all_tables.html')
+
 # Muestra las tablas de información desencriptada
 @app.route('/show_tables')
 @login_required
@@ -334,41 +338,30 @@ def show_tables():
     try:
         connection, cursor = db_utils.connect()
         cursor.execute("SELECT * FROM websites_info WHERE owner = %s",(username_logged_in,))
-        websites = cursor.fetchall() 
-        for entry in websites:
-            if entry['password']:
-                try:
-                    decrypted_password = crypto_utils.decrypt_password(encryption_key,entry['password'])
-                    websites_decrypted_data.append({
-                        'id': entry['id'],
-                        'website': entry['website'],
-                        'user': entry['user'],
-                        'password': decrypted_password,
-                        'owner': entry['owner']
-                    })
-                except Exception as decrypt_error:
-                    websites_decrypted_data.append({
-                        'id': entry['id'],
-                        'website': entry['website'],
-                        'user': entry['user'],
-                        'password': f"[Error decrypting password or incorrect key {decrypt_error}]", # message para el usuario
-                        'owner': entry['owner']
-                    })
-            else:
-                websites_decrypted_data.append({
-                    'id': entry['id'],
-                    'website': entry['website'],
-                    'user': entry['user'],
-                    'password': "[No password stored]",
-                    'owner': entry['owner']
-                })
-
-        return render_template('show_tables.html', websites=websites_decrypted_data)
+        websites = cursor.fetchall()
     except Exception as e:
-        message="Error al conectar a las base de datos" +str(e)
-        return redirect(url_for('show_tables',message=message))
+        message=f'Error when trying to connect to the database: {e}'
+        return render_template(SHOW_TABLES, message=message)
     finally:
         db_utils.disconnect(connection, cursor)
+    
+    if not websites:
+        message = 'No information has been entered into the database'
+        return render_template(SHOW_TABLES, message=message)
+        
+    for entry in websites:
+        decrypted_password = crypto_utils.decrypt_password(encryption_key,entry['password'])
+        websites_decrypted_data.append({
+            'id': entry['id'],
+            'website': entry['website'],
+            'user': entry['user'],
+            'password': decrypted_password,
+            'owner': entry['owner'],
+            'created_at': entry['created_at']
+        })
+          
+        return render_template(SHOW_TABLES, websites=websites_decrypted_data)
+
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=5000, debug=True) #Pending to change
