@@ -1,6 +1,6 @@
 {% extends "dashboard.html" %}
 {% block content %}
-
+<p> This is the current information saved in the database</p>
 <table>
     <thead>
         <tr>
@@ -8,7 +8,8 @@
             <th>Website</th>
             <th>Username</th>
             <th>Password</th>
-            <th>Created by</th>
+            <th>Created by:</th>
+            <th>Created on:</th>
         </tr>
     </thead>
     <tbody>
@@ -18,9 +19,15 @@
             <td>{{ entry['website'] }}</td> 
             <td>{{ entry['user'] }}</td> 
             <td>{{ entry['password'] }}</td>
-            <td>{{ entry['owner'] }}</td>   
+            <td>{{ entry['owner'] }}</td>
+            <td>{{ entry['created_at'] }}</td>     
         </tr>
         {% endfor %} 
     </tbody>
-</table>  
+</table>
+{% if message %}
+    <div class="alert-message" role="alert">
+        {{message}}
+    </div>
+{% endif %}  
 {% endblock %}

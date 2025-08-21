@@ -5,13 +5,13 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <fieldset><legend> Enter the information of the website </legend>
         <label for="website">Website:</label>
-        <input type="text" name="website" id="website" value="" placeholder="www.google.com" required> 
+        <input type="text" name="website" id="website" value="" placeholder="www.google.com" autocomplete="off" required> 
         <br>
         <label for="user">Username:</label>
-        <input type="text" name="user" id="user" value="" placeholder="Enter the username" required>
+        <input type="text" name="user" id="user" value="" placeholder="Enter the username" autocomplete="off" required>
         <br>
         <label for="password">Password:</label>
-        <input type="password" name="password" id="password" value="" placeholder="StrongPassword..." required>
+        <input type="password" name="password" id="password" value="" placeholder="StrongPassword..." autocomplete="off" required>
         <br>
         <input type="submit" value="Submit"/>
         </fieldset>

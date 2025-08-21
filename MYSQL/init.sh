@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS websites_info (
     user VARCHAR(255) NOT NULL,     
     password BLOB NOT NULL,
     owner VARCHAR(255) NOT NULL,
+    created_at DATE NOT NULL DEFAULT (CURRENT_DATE),
     FOREIGN KEY (owner) REFERENCES users(user) ON DELETE CASCADE
 );
 

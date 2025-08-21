@@ -9,16 +9,21 @@
 <body>
     <header>
         <nav>
+             {% if session['admin'] == True %}
             <ul>
-                {% if session['admin'] == True %}
                 <li><a href="{{url_for('dashboard')}}">Dashboard</a></li>
                 <li><a href="{{url_for('register')}}">Register a user</a></li>
                 <li><a href="{{url_for('manage_users')}}">Manage Users</a></li>      
                 <li><a href="{{url_for('login')}}">Login with another user</a></li>
+            </ul>
+            <ul>
                 <li><a href="{{url_for('website_info')}}">Save sites Information</a></li>
                 <li><a href="{{url_for('show_tables')}}">Show tables</a></li>
+                <li><a href="{{url_for('show_all_tables')}}">Show tables</a></li>
                 <li><a href="{{url_for('reset_password')}}">Change password</a></li>
                 <li><a href="{{url_for('logout')}}">Logout</a></li>
+            </ul>
+                
                 {% elif session['admin'] == False %}
                 <li><a href="{{url_for('login')}}">Login with another user</a></li>
                 <li><a href="{{url_for('website_info')}}">Save sites Information</a></li>

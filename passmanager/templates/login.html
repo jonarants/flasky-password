@@ -8,6 +8,9 @@
     
 </head>
 <body>
+    <header>
+
+    </header>
     <main class="container">
     {% block content %}
     
@@ -17,15 +20,15 @@
         <fieldset><legend> Login </legend>
         <label for="user">Username:</label>
         <br>
-        <input type="text" name="user" id="user" value="" placeholder="username" required> 
+        <input type="text" name="user" id="user" value="" placeholder="username" autocomplete="off" required > 
         <br>
         <label for="pasword">Password:</label>
         <br>
-        <input type="password" name="password" id="password" value="" placeholder="password" required>
+        <input type="password" name="password" id="password" value="" placeholder="password" autocomplete="off" required>
         <br>
         <label for="2fatoken">2FA token</label>
         <br>        
-        <input type="text" name="2fatoken" id="2fatoken" value="" placeholder="2FA optional" inputmode="numeric" pattern="[0-9]*">
+        <input type="text" name="2fatoken" id="2fatoken" value="" placeholder="2FA optional" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
         <br>
         <input type="submit" value="Submit"/>
         </fieldset>

@@ -62,6 +62,7 @@ nav ul li a {
     padding: 10px 15px;
     border-radius: 5px;
     transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: url('/static/images/catpawv1.png'), auto;
 }
 
 nav ul li a:hover,
