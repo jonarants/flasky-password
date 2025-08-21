@@ -141,15 +141,23 @@ def logout():
 @app.route('/validate_qr', methods=['POST'])
 @login_required
 def validate_qr():
+    user = None
+    to_validate = None
+    
+    user = request.form['user_hidden']
+    to_validate = request.form['validate_token_qr']
+    
+
     connection, cursor = db_utils.connect()
-    user = 'test'
+
     cursor.execute(
         "SELECT two_factor_secret FROM users WHERE user = %s",(user,)
     )
     two_fa_secret = cursor.fetchone()
-    to_validate = request.form['validate_token_qr']
     if qr_2fa_utils.validate_token(to_validate, two_fa_secret['two_factor_secret']):
             validtoken = "2FA completed"
+            qr_2fa_utils.clean_qr_code()
+            db_utils.disconnect(connection, cursor)
             return render_template('register.html', validtoken=validtoken)
     else:
         return render_template('register.html', message=message, qr_path=qr_path)
@@ -166,7 +174,8 @@ def validate_qr():
 def register():
     message = request.args.get('message')
     qr_path = request.args.get('qr_path')
-    return render_template('register.html', message=message, qr_path=qr_path)
+    user = request.args.get('user')
+    return render_template('register.html', message=message, qr_path=qr_path, user=user)
 
 @app.route('/register_user', methods=['POST'])
 @login_required
@@ -201,7 +210,7 @@ def register_user():
         connection, cursor = db_utils.connect()
         cursor.execute('INSERT INTO users (user, password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, admin) VALUES (%s,%s,%s,%s,%s,%s,%s)',(user, hashed_password, two_factor_secret, two_factor_enabled, key_salt, encrypted_user_key, is_admin_enabled))
         connection.commit()
-        message = f"The user: {user} Was created correctly"
+        message = "The user:"
         if two_factor_enabled:
             return redirect(url_for('register', message=message, qr_path=qr_path, user=user))
         else:
