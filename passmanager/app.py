@@ -138,6 +138,27 @@ def logout():
 
     return render_template('logout.html')
 
+@app.route('/validate_qr', methods=['POST'])
+@login_required
+def validate_qr():
+    connection, cursor = db_utils.connect()
+    user = 'test'
+    cursor.execute(
+        "SELECT two_factor_secret FROM users WHERE user = %s",(user,)
+    )
+    two_fa_secret = cursor.fetchone()
+    to_validate = request.form['validate_token_qr']
+    if qr_2fa_utils.validate_token(to_validate, two_fa_secret['two_factor_secret']):
+            validtoken = "2FA completed"
+            return render_template('register.html', validtoken=validtoken)
+    else:
+        return render_template('register.html', message=message, qr_path=qr_path)
+
+
+
+
+
+
 # Ruta de registro
 @app.route('/register')
 @login_required
@@ -182,7 +203,7 @@ def register_user():
         connection.commit()
         message = f"The user: {user} Was created correctly"
         if two_factor_enabled:
-            return redirect(url_for('register', message=message, qr_path=qr_path))
+            return redirect(url_for('register', message=message, qr_path=qr_path, user=user))
         else:
             return redirect(url_for('register', message=message))
     except Exception as e:
