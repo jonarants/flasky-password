@@ -3,15 +3,21 @@
 {% if qr_path %}
     <div class="img-dashboard">
         <img src="{{ url_for('static', filename='images/my_qr.png') }}" alt="QR_CODE">
-        <p>{{message}}</p>
+        <p> 
+            <span id="message_id">{{message}} :</span>
+            <span id="user_id">{{user}}</span>
+            <span id="user_id">. Was created test</span>
+        </p>
         <form name="validate_qr" id="validate_qr" action="validate_qr" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <fieldset><legend>Please enter the token to validate the integration</legend>
                 <input type="text" name="validate_token_qr" id="validate_token_qr" value="" placeholder="" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
-            <input type="submit" value="Submit"/>
+                <input type="submit" value="Submit"/>
+                <input type="hidden" name="user_hidden" id="user_hidden" value="" />
             </fieldset>
         </form>
     </div>
+    <script src="{{ url_for('static', filename='js/validation_form.js') }}"></script>
 {% elif validtoken %}
     <img src="{{ url_for('static', filename='images/my_qr.png') }}" alt="QR_CODE">
     <div class="img-dashboard">
@@ -40,6 +46,5 @@
         <input type="submit" value="Submit"/>
         </fieldset>
     </form>
-
 {% endif %}
 {% endblock %}
