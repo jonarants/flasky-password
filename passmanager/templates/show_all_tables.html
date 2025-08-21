@@ -24,5 +24,10 @@
         </tr>
         {% endfor %} 
     </tbody>
-</table>  
+</table>
+{% if message %}
+    <div class="alert-message" role="alert">
+        {{message}}
+    </div>
+{% endif %}  
 {% endblock %}

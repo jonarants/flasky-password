@@ -1,4 +1,4 @@
-from datetime import timedelta, date
+from datetime import timedelta
 from flask import Flask, render_template, request, session, redirect, url_for, flash, current_app
 from flask_bcrypt import Bcrypt #
 from functools import wraps
@@ -11,7 +11,6 @@ from db.db_utils import DBUtils
 from login.login_utils import LoginUtils
 from crypto.crypto_utils import CryptoUtils
 from flask_wtf.csrf import CSRFProtect
-
 
 qr_2fa_utils = QR2FAUtils()
 read_secrets = ReadSecrets()
@@ -29,8 +28,6 @@ app.config.from_mapping(
     SECRET_KEY= read_secrets.get_secret('flask_secret_key_secret'), #Carga de secreto de app
     PERMANENT_SESSION_LIFETIME = timedelta(seconds=60) # Manejo de session timeout
 )
-
-
 
 #CONSTANTS SONAR
 LOGIN = 'login.html'
@@ -322,9 +319,40 @@ def website_info():
         db_utils.disconnect(connection, cursor)
 
 @app.route('/show_all_tables')
+@is_admin
 @login_required
 def show_all_tables():
-    return render_template('show_all_tables.html')
+    message = request.args.get('message')
+    username_logged_in = session ['user']
+    memcached_key_name= f"fernet_key:{username_logged_in}"
+    encryption_key = memcached_client.get(memcached_key_name)
+    websites_decrypted_data = []
+    try:
+        connection, cursor = db_utils.connect()
+        cursor.execute("SELECT * FROM websites_info WHERE owner = %s",(username_logged_in,))
+        websites = cursor.fetchall()
+    except Exception as e:
+        message=f'Error when trying to connect to the database: {e}'
+        return render_template(SHOW_TABLES, message=message)
+    finally:
+        db_utils.disconnect(connection, cursor)
+    
+    if not websites:
+        message = 'No information has been entered into the database'
+        return render_template(SHOW_TABLES, message=message)
+        
+    for entry in websites:
+        decrypted_password = crypto_utils.decrypt_password(encryption_key,entry['password'])
+        websites_decrypted_data.append({
+            'id': entry['id'],
+            'website': entry['website'],
+            'user': entry['user'],
+            'password': decrypted_password,
+            'owner': entry['owner'],
+            'created_at': entry['created_at']
+        })
+
+    return render_template(SHOW_TABLES)
 
 # Muestra las tablas de información desencriptada
 @app.route('/show_tables')
@@ -359,8 +387,8 @@ def show_tables():
             'owner': entry['owner'],
             'created_at': entry['created_at']
         })
-          
-        return render_template(SHOW_TABLES, websites=websites_decrypted_data)
+
+    return render_template(SHOW_TABLES, websites=websites_decrypted_data)
 
 
 if __name__=='__main__':
