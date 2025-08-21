@@ -4,6 +4,18 @@
     <div class="img-dashboard">
         <img src="{{ url_for('static', filename='images/my_qr.png') }}" alt="QR_CODE">
         <p>{{message}}</p>
+        <form name="validate_qr" id="validate_qr" action="validate_qr" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <fieldset><legend>Please enter the token to validate the integration</legend>
+                <input type="text" name="validate_token_qr" id="validate_token_qr" value="" placeholder="" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+            <input type="submit" value="Submit"/>
+            </fieldset>
+        </form>
+    </div>
+{% elif validtoken %}
+    <img src="{{ url_for('static', filename='images/my_qr.png') }}" alt="QR_CODE">
+    <div class="img-dashboard">
+        <p>{{validtoken}}</p>
     </div>
 {% elif message %}
     <div class="img-dashboard">
@@ -14,10 +26,10 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <fieldset><legend> Enter the info for the user to save in the password manager </legend>
         <label for="user">User:</label>
-        <input type="text" name="user" id="user" value="" placeholder="Usuario" required> 
+        <input type="text" name="user" id="user" value="" placeholder="Usuario" autocomplete="off" required> 
         <br>
         <label for="pasword">Password:</label>
-        <input type="password" name="password" id="password" value="" placeholder="Password" required>
+        <input type="password" name="password" id="password" value="" placeholder="Password" autocomplete="off" required>
         <br>
         <label for="two_factor_enabled">Habilitar 2FA:</label>
         <input type="checkbox" name="two_factor_enabled" id="two_factor_enabled" value="Enabled" unchecked>
@@ -25,7 +37,7 @@
         <label for="two_factor_enabled">Admin:</label>
         <input type="checkbox" name="is_admin_enabled" id="is_admin_enabled" value="Enabled" unchecked>
         <br>        
-        <input type="submit" value="Enviar"/>
+        <input type="submit" value="Submit"/>
         </fieldset>
     </form>
 
