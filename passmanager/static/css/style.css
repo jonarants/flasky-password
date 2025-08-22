@@ -317,6 +317,24 @@ footer a:hover {
     object-fit: cover;
 }
 
+@keyframes glowing-border {
+    0% {
+        border-image-source: linear-gradient(0deg, var(--background-light), var(--accent-color));
+    }
+    25% {
+        border-image-source: linear-gradient(90deg, var(--background-light), var(--accent-color));
+    }
+    50% {
+        border-image-source: linear-gradient(180deg, var(--background-light), var(--accent-color));
+    }
+    75% {
+        border-image-source: linear-gradient(270deg, var(--background-light), var(--accent-color));
+    }
+    100% {
+        border-image-source: linear-gradient(360deg, var(--background-light), var(--accent-color));
+    }
+}
+
 #timeout-div {
     position: fixed;
     z-index: 1000;
@@ -325,12 +343,15 @@ footer a:hover {
     left: 50%;
     transform: translate(-50%,-50%);
     background-color: var(--background-light);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     font-weight: bold;
     text-align: center;
-    color: var(--text-color-dark)
+    color: var(--text-color-dark);
+    border: 3px solid var(--primary-purple);
+    border-image-slice: 1;
+    animation: glowing-border 4s infinite linear;
 }
 
 
