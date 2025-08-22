@@ -10,7 +10,7 @@ from secrets.read_secrets import ReadSecrets
 from db.db_utils import DBUtils
 from login.login_utils import LoginUtils
 from crypto.crypto_utils import CryptoUtils
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
 
 qr_2fa_utils = QR2FAUtils()
 read_secrets = ReadSecrets()
@@ -25,27 +25,19 @@ bcrypt = Bcrypt (app)
 memcached_client = base.Client(('memcached', 11211))
 
 app.config.from_mapping(
-    SECRET_KEY= read_secrets.get_secret('flask_secret_key_secret'), #Carga de secreto de app
-    PERMANENT_SESSION_LIFETIME = timedelta(seconds=60) # Manejo de session timeout
+    SECRET_KEY= read_secrets.get_secret('flask_secret_key_secret'), #Loads the secret
+    PERMANENT_SESSION_LIFETIME = timedelta(seconds=60) # Manages the session duration
 )
 
-#CONSTANTS SONAR
+#CONSTANTS recommended by SonarQube Scan to stop repeating stuff
 LOGIN = 'login.html'
+REGISTER = 'register.html'
 WEBSITE_INFO = 'website_info.html'
 SHOW_TABLES = 'show_tables.html'
 SHOW_ALL_TABLES = 'show_all_tables.html'
-# Definicion del decorador befor_request que se usa para el timeout de sesiones
 
-@app.before_request
-def before_request():
-    if 'user' in session:
-        session.permanent = True
-        session['user']
-        memcached_key_name = f"fernet_key:{session['user']}"
-        if memcached_client.get(memcached_key_name):
-            memcached_client.touch(memcached_key_name, expire=60)
-        else:
-            return redirect(url_for('login'))
+
+
 
 # Definicion del decorador de login necesario
 def login_required(f):
@@ -56,6 +48,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 def is_admin(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -65,16 +58,38 @@ def is_admin(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Metodos de decoradores para rutas
+# Decorators for routest
 
-# Ruta del dashboard
+
+#This method creates a clean session for the user and retouches it after auth
+def refresh_session_for_user():
+    if 'user' in session:
+        session.permanent = True
+        session['user']
+        memcached_key_name = f"fernet_key:{session['user']}"
+        if memcached_client.get(memcached_key_name):
+            memcached_client.touch(memcached_key_name, expire=60)
+        else:
+            return redirect(url_for('login'))
+
+@app.before_request
+def before_request():
+    refresh_session_for_user()
+
+# Still havent call this one yet haha
+@app.route('/refresh_session')
+@login_required
+def refresh_session():
+    refresh_session_for_user()
+
+# Dashboard route
 @app.route('/dashboard')
 @login_required
 def dashboard():
     message = request.args.get('message')
     return render_template('dashboard.html', message=message)
 
-# Ruta de login/validacion del login/ruta principal
+# Route for login methods
 @app.route('/')
 def login():
     if 'user' in session:
@@ -83,6 +98,7 @@ def login():
     session.clear()
     return render_template(LOGIN)
 
+#Route for login validation through post
 @app.route('/login_validation', methods=['POST'])
 def login_validation():
     user = request.form['user']
@@ -127,7 +143,7 @@ def login_validation():
         message = "Invalid user/password"
         return render_template(LOGIN, message = message)
 
-# Metodo de logout
+# Logout method
 
 @app.route('/logout')
 def logout():
@@ -138,36 +154,8 @@ def logout():
 
     return render_template('logout.html')
 
-@app.route('/validate_qr', methods=['POST'])
-@login_required
-def validate_qr():
-    user = None
-    to_validate = None
-    
-    user = request.form['user_hidden']
-    to_validate = request.form['validate_token_qr']
-    
 
-    connection, cursor = db_utils.connect()
-
-    cursor.execute(
-        "SELECT two_factor_secret FROM users WHERE user = %s",(user,)
-    )
-    two_fa_secret = cursor.fetchone()
-    if qr_2fa_utils.validate_token(to_validate, two_fa_secret['two_factor_secret']):
-            validtoken = "2FA completed"
-            qr_2fa_utils.clean_qr_code()
-            db_utils.disconnect(connection, cursor)
-            return render_template('register.html', validtoken=validtoken)
-    else:
-        return render_template('register.html', message=message, qr_path=qr_path)
-
-
-
-
-
-
-# Ruta de registro
+# Register route just the render
 @app.route('/register')
 @login_required
 @is_admin
@@ -175,8 +163,41 @@ def register():
     message = request.args.get('message')
     qr_path = request.args.get('qr_path')
     user = request.args.get('user')
-    return render_template('register.html', message=message, qr_path=qr_path, user=user)
+    return render_template(REGISTER, message=message, qr_path=qr_path, user=user)
 
+# QR validation route 
+@app.route('/validate_qr', methods=['POST'])
+@login_required
+def validate_qr():
+    user = None
+    to_validate = None
+    user = request.form['user_hidden']
+    to_validate = request.form['validate_token_qr']
+    try:
+        connection, cursor = db_utils.connect()
+        cursor.execute(
+            "SELECT two_factor_secret FROM users WHERE user = %s",(user,)
+        )
+        two_factor_secret = cursor.fetchone()
+    except Exception as e:
+        message = "Error fetching information from database"
+        render_template(REGISTER, message = message)
+    finally:
+        qr_2fa_utils.clean_qr_code()
+        db_utils.disconnect(connection, cursor)
+
+    if qr_2fa_utils.validate_token(to_validate, two_factor_secret['two_factor_secret']):
+            validtoken = "2FA completed"
+            return render_template(REGISTER, validtoken=validtoken)
+    else:
+        base_path = os.path.dirname(os.path.abspath(__file__)) 
+        basepath = os.path.join(base_path, 'static')
+        uri_totp = qr_2fa_utils.generate_uri(two_factor_secret['two_factor_secret'], user)
+        qr_path = qr_2fa_utils.generate_uri_qrcode(uri_totp, basepath)
+        message = "The token is incorrect, please try again."
+        return render_template(REGISTER, message=message, qr_path=qr_path, user=user)
+
+# Register post with the inserts into the DB
 @app.route('/register_user', methods=['POST'])
 @login_required
 @is_admin
@@ -222,8 +243,8 @@ def register_user():
       qr_2fa_utils.clean_qr_code()
       db_utils.disconnect(connection, cursor)
 
-# Administracion de usuarios
-# Eliminar usuarios
+# User management
+# Delete users might need to adjust
 @app.route('/manage_users', methods =['GET'])
 @login_required
 @is_admin
@@ -273,12 +294,15 @@ def manage_users():
     finally:
         db_utils.disconnect(connection, cursor)
 
+# Route for changing password just the render
+
 @app.route('/reset_password', methods=['GET'])
 @login_required
 def get_reset_password():
     message = request.args.get('message')
     return render_template('reset_password.html',message=message)
 
+# Actual logic for resetting the password in the DB
 
 @app.route('/reset_password', methods=['POST'])
 @login_required
@@ -324,7 +348,7 @@ def get_website_info():
         message = request.args.get('message')
         return render_template(WEBSITE_INFO, message=message)
 
-# Captura de informacion de sitios web
+# Capture users to store in the DB for safekeeping with encryption
 
 @app.route('/website_info', methods=['POST'])
 @login_required
@@ -347,6 +371,8 @@ def website_info():
         return render_template(WEBSITE_INFO,message=message)
     finally:
         db_utils.disconnect(connection, cursor)
+
+# It shows all the data stored for the current user, might change later to admin?parental control
 
 @app.route('/show_all_tables')
 @is_admin
@@ -384,7 +410,7 @@ def show_all_tables():
 
     return render_template(SHOW_TABLES)
 
-# Muestra las tablas de información desencriptada
+# Same it only shows the data of the sites saved by the current user
 @app.route('/show_tables')
 @login_required
 def show_tables():
@@ -422,5 +448,5 @@ def show_tables():
 
 
 if __name__=='__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True) #Pending to change
+    app.run(host='0.0.0.0', port=5000, debug=True) #Pending to change due SonarQube
 

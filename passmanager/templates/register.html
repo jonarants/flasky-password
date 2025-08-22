@@ -21,8 +21,14 @@
 {% elif validtoken %}
     <img src="{{ url_for('static', filename='images/my_qr.png') }}" alt="QR_CODE">
     <div class="img-dashboard">
-        <p>{{validtoken}}</p>
+        <p>
+            <span>{{validtoken}}</span>
+            <span>Redirecting in: </span>
+            <span id="countdown-redirect-dashboard">10</span>
+            <span>seconds.</span>
+        </p>
     </div>
+    <script src="{{ url_for('static', filename='js/redirect_timer.js') }}"></script>
 {% elif message %}
     <div class="img-dashboard">
         <p>{{message}}</p>

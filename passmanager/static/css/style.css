@@ -317,6 +317,21 @@ footer a:hover {
     object-fit: cover;
 }
 
+#timeout-div {
+    position: fixed;
+    z-index: 1000;
+    display: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    font-weight: bold;
+    text-align: center;
+    color: var(--text-color-dark)
+}
 
 
 /* Responsive Design (para móviles) */
