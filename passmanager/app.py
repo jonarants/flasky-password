@@ -36,6 +36,9 @@ WEBSITE_INFO = 'website_info.html'
 SHOW_TABLES = 'show_tables.html'
 SHOW_ALL_TABLES = 'show_all_tables.html'
 
+# Messages
+INVALID_ACCESS = 'Invalid user or password.'
+
 
 
 
@@ -118,10 +121,10 @@ def login_validation():
         db_utils.disconnect(connection, cursor)
 
     if not user_record:
-        message = "Invalid user/password"
+        message = INVALID_ACCESS
         return render_template(LOGIN, message = message)
     if not crypto_utils.validate_password(user_record['password'], password):
-        message = "Invalid user/password"
+        message = INVALID_ACCESS
         return render_template(LOGIN, message = message)
     
     session['user'] = user_record['user']
@@ -140,7 +143,7 @@ def login_validation():
     if qr_2fa_utils.validate_token(twofatoken, two_fa_secret):
         return redirect(url_for('dashboard'))
     else:
-        message = "Invalid user/password"
+        message = INVALID_ACCESS
         return render_template(LOGIN, message = message)
 
 # Logout method
@@ -180,7 +183,7 @@ def validate_qr():
         )
         two_factor_secret = cursor.fetchone()
     except Exception as e:
-        message = "Error fetching information from database"
+        message = f"Error fetching information from database:{e}"
         render_template(REGISTER, message = message)
     finally:
         qr_2fa_utils.clean_qr_code()
