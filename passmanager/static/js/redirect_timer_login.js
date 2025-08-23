@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
     const countdownElementLogin = document.getElementById('countdown-redirect-login');
-    const countdownElementLoginDiv = document.getElementById('timeout-div');
 
     if (countdownElementLogin){
         redirectLoginCountdown();
