@@ -17,6 +17,8 @@ html {
     --border-color: #B28FCE;   /* Color para bordes sutiles */
     --error-red: #D32F2F;      /* Rojo para messages de error */
     --secondary-purple: #d400ff;
+    --tex-color-purple: #d400ff;
+    --background-white: #F8F8F8;
 }
 
 /* Base HTML y Tipografía */
@@ -318,23 +320,7 @@ footer a:hover {
     object-fit: cover;
 }
 
-@keyframes glowing-border {
-    0% {
-        border-image-source: linear-gradient(0deg, var(--background-light), var(--secondary-purple));
-    }
-    25% {
-        border-image-source: linear-gradient(90deg, var(--background-light), var(--secondary-purple));
-    }
-    50% {
-        border-image-source: linear-gradient(180deg, var(--background-light), var(--secondary-purple));
-    }
-    75% {
-        border-image-source: linear-gradient(270deg, var(--background-light), var(--secondary-purple));
-    }
-    100% {
-        border-image-source: linear-gradient(360deg, var(--background-light), var(--secondary-purple));
-    }
-}
+
 
 #timeout-div {
     position: fixed;
@@ -343,17 +329,32 @@ footer a:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%,-50%);
-    background-color: var(--primary-purple);
-    padding: 30px;
-    border-radius: 10px;
+    background-color: var(--background-white);
+    padding:30px;
+    border-radius: 25px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     font-weight: bold;
     text-align: center;
-    color: var(--text-color-light);
-    border: 3px solid var(--primary-purple);
-    border-image-slice: 1;
-    animation: glowing-border 4s infinite linear;
+    color: var(--text-color-dark);
+    border: 5px solid var(--primary-purple);
 }
+
+#keep-session {
+    position: flex; 
+    font-weight: bold;
+    color: var(--text-color-light);
+    border: 5px solid var(--border-color);
+    background-color: var(--primary-purple);
+    border-radius: 25px;
+    left: 50%;
+}
+
+#keep-session:hover,
+#keep-session:focus {
+    background-color: var(--light-purple);
+    color: var(--primary-purple);
+}
+
 
 
 /* Responsive Design (para móviles) */
