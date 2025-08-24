@@ -84,6 +84,7 @@ def before_request():
 @login_required
 def refresh_session():
     refresh_session_for_user()
+    return 'OK', 200 #For return a status to the JS console
 
 # Dashboard route
 @app.route('/dashboard')
@@ -104,6 +105,7 @@ def login():
 #Route for login validation through post
 @app.route('/login_validation', methods=['POST'])
 def login_validation():
+    csrf._get_csrf_token()
     user = request.form['user']
     password = request.form['password']
     connection = None
