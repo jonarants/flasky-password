@@ -16,9 +16,10 @@ let redirectTimerDashboardInterval = null;
 function redirectLoginCountdown(){
     const countdownElementLogin = document.getElementById('countdown-redirect-login');
     const countdownElementLoginDiv = document.getElementById('timeout-div');
-
+    console.log("Started the process redirectLogingCountdown");
     if (redirectTimerLoginInterval) {
         clearInterval(redirectTimerLoginInterval);
+        fetch('/refresh_session');
     }
 
     let timeLeft = 60;
@@ -44,7 +45,7 @@ function redirectLoginCountdown(){
 
 function redirectDashboardCountdown(){
     const countdownElementDashboard = document.getElementById('countdown-redirect-dashboard');
-
+    console.log("Started the process redirectLogingCountdown");
     if (redirectTimerDashboardInterval) {
         clearInterval(redirectTimerDashboardInterval);
     }
@@ -58,6 +59,7 @@ function redirectDashboardCountdown(){
         if (timeLeft <=0) {
             clearInterval(redirectTimerDashboardInterval);
             window.location.href = '/dashboard';
+            
         }
     }, 1000);
 
