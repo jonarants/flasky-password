@@ -1,0 +1,13 @@
+[
+    {
+        "typeName": "CSRFError",
+        "code": 400,
+        "name": "Bad Request",
+        "description": "The CSRF session token is missing.",
+        "action": {
+            "name": "redirect",
+            "data1": "auths.login",
+            "data2": "Oops... Too much idle time has passed... Please try again."
+        }
+    }
+]
