@@ -10,7 +10,7 @@ from secrets.read_secrets import ReadSecrets
 from db.db_utils import DBUtils
 from login.login_utils import LoginUtils
 from crypto.crypto_utils import CryptoUtils
-from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_wtf.csrf import CSRFProtect
 
 qr_2fa_utils = QR2FAUtils()
 read_secrets = ReadSecrets()
@@ -98,14 +98,16 @@ def dashboard():
 def login():
     if 'user' in session:
         memcached_client.delete(f"fernet_key:{session['user']}")
-    session.pop('user', None)
-    session.clear()
+        session.pop('user', None)
+        session.clear()
     return render_template(LOGIN)
 
 #Route for login validation through post
 @app.route('/login_validation', methods=['POST'])
 def login_validation():
-    csrf._get_csrf_token()
+    if not session:
+        return redirect(url_for('login'))
+
     user = request.form['user']
     password = request.form['password']
     connection = None
