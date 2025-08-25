@@ -9,7 +9,7 @@
 </head>
 <body>
     <header>
-
+         
     </header>
     <main class="container">
     {% block content %}
@@ -47,6 +47,7 @@
             <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
         </div>
     {% endblock %}
+    <script src="{{ url_for('static', filename='js/refresh_login_session.js') }}"></script>   
     </main> 
     <footer>
         <p>&copy; Flasky Password Manager. All rights reserved.</p>
