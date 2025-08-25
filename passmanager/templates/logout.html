@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <header>
+        
+    </header>
     <video id="background-video" autoplay muted loop tabindex="-1">
         <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/webm">
         <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/mp4">
@@ -23,6 +26,14 @@
             </ul>
             <img src="{{ url_for('static', filename='images/officecat.jpg') }}" alt="office cat meme">
         </div>
+        <div class="img-dashboard">
+            <p>
+                <span>Redirecting in: </span>
+                <span id="countdown-redirect-logout">5</span>
+                <span>seconds.</span>
+            </p>
+        </div>
+    <script src="{{ url_for('static', filename='js/redirect_timer.js') }}"></script>  
     </main>
     {% endblock %}
     <footer>

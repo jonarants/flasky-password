@@ -34,7 +34,6 @@ LOGIN = 'login.html'
 REGISTER = 'register.html'
 WEBSITE_INFO = 'website_info.html'
 SHOW_TABLES = 'show_tables.html'
-SHOW_ALL_TABLES = 'show_all_tables.html'
 
 # Messages
 INVALID_ACCESS = 'Invalid user or password.'
@@ -378,44 +377,6 @@ def website_info():
         return render_template(WEBSITE_INFO,message=message)
     finally:
         db_utils.disconnect(connection, cursor)
-
-# It shows all the data stored for the current user, might change later to admin?parental control
-
-@app.route('/show_all_tables')
-@is_admin
-@login_required
-def show_all_tables():
-    message = request.args.get('message')
-    username_logged_in = session ['user']
-    memcached_key_name= f"fernet_key:{username_logged_in}"
-    encryption_key = memcached_client.get(memcached_key_name)
-    websites_decrypted_data = []
-    try:
-        connection, cursor = db_utils.connect()
-        cursor.execute("SELECT * FROM websites_info WHERE owner = %s",(username_logged_in,))
-        websites = cursor.fetchall()
-    except Exception as e:
-        message=f'Error when trying to connect to the database: {e}'
-        return render_template(SHOW_TABLES, message=message)
-    finally:
-        db_utils.disconnect(connection, cursor)
-    
-    if not websites:
-        message = 'No information has been entered into the database'
-        return render_template(SHOW_TABLES, message=message)
-        
-    for entry in websites:
-        decrypted_password = crypto_utils.decrypt_password(encryption_key,entry['password'])
-        websites_decrypted_data.append({
-            'id': entry['id'],
-            'website': entry['website'],
-            'user': entry['user'],
-            'password': decrypted_password,
-            'owner': entry['owner'],
-            'created_at': entry['created_at']
-        })
-
-    return render_template(SHOW_TABLES)
 
 # Same it only shows the data of the sites saved by the current user
 @app.route('/show_tables')

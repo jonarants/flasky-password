@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const countdownElementLogin = document.getElementById('countdown-redirect-login');
     const countdownElementDashboard = document.getElementById('countdown-redirect-dashboard');
+    const countdownElementLogout = document.getElementById('countdown-redirect-logout');
+    
+    
 
     if (countdownElementLogin){
         redirectLoginCountdown();
@@ -8,10 +11,38 @@ document.addEventListener('DOMContentLoaded', function() {
     if (countdownElementDashboard) {
         redirectDashboardCountdown();
     }
+        if (countdownElementLogout){
+        redirectLogoutCountdown();
+    }
 });
 
 let redirectTimerLoginInterval = null;
 let redirectTimerDashboardInterval = null;
+let redirectTimerLogoutInterval = null;
+
+function redirectLogoutCountdown(){
+    const countdownElementLogout = document.getElementById('countdown-redirect-logout');
+    console.log("Started the process redirectTimerLogoutInterval");
+    if (redirectTimerLogoutInterval) {
+        clearInterval(redirectTimerLogoutInterval);
+    }
+
+    let timeLeft = 5;
+
+    redirectTimerLogoutInterval = setInterval(function () {
+        timeLeft -= 1;
+        countdownElementLogout.textContent = timeLeft;
+
+        if (timeLeft <=0) {
+            clearInterval(redirectTimerLogoutInterval);
+            window.location.href = '/';
+            
+        }
+    }, 1000);
+
+}
+
+
 
 function redirectLoginCountdown(){
     const countdownElementLogin = document.getElementById('countdown-redirect-login');
