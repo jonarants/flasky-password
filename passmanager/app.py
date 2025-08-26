@@ -10,7 +10,7 @@ from secrets.read_secrets import ReadSecrets
 from db.db_utils import DBUtils
 from login.login_utils import LoginUtils
 from crypto.crypto_utils import CryptoUtils
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
 
 qr_2fa_utils = QR2FAUtils()
 read_secrets = ReadSecrets()
@@ -34,6 +34,7 @@ LOGIN = 'login.html'
 REGISTER = 'register.html'
 WEBSITE_INFO = 'website_info.html'
 SHOW_TABLES = 'show_tables.html'
+ERROR = 'error.html'
 
 # Messages
 INVALID_ACCESS = 'Invalid user or password.'
@@ -73,6 +74,12 @@ def refresh_session_for_user():
             memcached_client.touch(memcached_key_name, expire=60)
         else:
             return redirect(url_for('login'))
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    error_message = f'Error: {e} Your session expired, please try again.'
+    return render_template (ERROR, error_message=error_message)
+
 
 @app.before_request
 def before_request():

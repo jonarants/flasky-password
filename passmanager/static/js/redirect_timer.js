@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const countdownElementLogin = document.getElementById('countdown-redirect-login');
     const countdownElementDashboard = document.getElementById('countdown-redirect-dashboard');
     const countdownElementLogout = document.getElementById('countdown-redirect-logout');
+    const countdownElementError = document.getElementById('countdown-redirect-error');
     
     
 
@@ -11,14 +12,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (countdownElementDashboard) {
         redirectDashboardCountdown();
     }
-        if (countdownElementLogout){
+    if (countdownElementLogout){
         redirectLogoutCountdown();
+    }
+    if (countdownElementError){
+        redirectErrorCountdown();
     }
 });
 
 let redirectTimerLoginInterval = null;
 let redirectTimerDashboardInterval = null;
 let redirectTimerLogoutInterval = null;
+let redirectTimerErrorInterval = null;
+
 
 function redirectLogoutCountdown(){
     const countdownElementLogout = document.getElementById('countdown-redirect-logout');
@@ -35,6 +41,27 @@ function redirectLogoutCountdown(){
 
         if (timeLeft <=0) {
             clearInterval(redirectTimerLogoutInterval);
+            window.location.href = '/';
+            
+        }
+    }, 1000);
+
+}
+function redirectErrorCountdown(){
+    const countdownElementError = document.getElementById('countdown-redirect-error');
+    console.log("Started the process redirectTimerErrorInterval");
+    if (redirectTimerErrorInterval) {
+        clearInterval(redirectTimerErrorInterval);
+    }
+
+    let timeLeft = 8;
+
+    redirectTimerErrorInterval = setInterval(function () {
+        timeLeft -= 1;
+        countdownElementError.textContent = timeLeft;
+
+        if (timeLeft <=0) {
+            clearInterval(redirectTimerErrorInterval);
             window.location.href = '/';
             
         }

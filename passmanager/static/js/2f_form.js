@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const twofacheckbox = document.getElementById('twofacheckbox');
-
     
-    
-
     if (twofacheckbox){
         this.addEventListener('change', display2FA)
     }

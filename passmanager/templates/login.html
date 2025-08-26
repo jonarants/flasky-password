@@ -36,21 +36,26 @@
         </fieldset>
     </form>
     <video id="background-video" autoplay muted loop tabindex="-1">
-        <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/webm">
+        <source src="{{ url_for('static', filename='video/render.webm') }}" type="video/webm">
         <source src="{{ url_for('static', filename='video/render.mp4') }}" type="video/mp4">
         <track kind="captions" label="" srclang="en" />
         Your browser doest not support the video tag.
     </video>
+    {% if error_message %}
+        <div class="alert-message" role="alert">
+            <p>{{message}}</p>
+        </div>
+    {% endif %}    
     {% if message %}
-            <div class="alert-message" role="alert">
-                <p>{{message}}</p>
-            </div> 
+        <div class="alert-message" role="alert">
+            <p>{{message}}</p>
+        </div> 
     {% endif %}
         <div class="img-dashboard">
             <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="coughing cat meme">
         </div>
     {% endblock %}
-    <script src="{{ url_for('static', filename='js/refresh_login_session.js') }}"></script>   
+    <!-- <script src="{{ url_for('static', filename='js/refresh_login_session.js') }}"></script>    -->
     </main> 
     <footer>
         <p>&copy; Flasky Password Manager. All rights reserved.</p>
