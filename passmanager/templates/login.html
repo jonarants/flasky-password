@@ -9,7 +9,7 @@
 <body>
     <header>
          
-        
+
     </header>
     <main class="container">
     {% block content %}
@@ -26,11 +26,13 @@
         <br>
         <input type="password" name="password" id="password" value="" placeholder="password" autocomplete="off" required>
         <br>
-        <label for="2fatoken">2FA token</label>
+        <label for="twofatoken">2FA token</label>
+        <input type="checkbox" id="twofacheckbox" name="twofacheckbox" value="activate" unchecked>
         <br>        
-        <input type="text" name="2fatoken" id="2fatoken" value="" placeholder="2FA optional" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+        <input type="text" name="twofatoken" id="twofatoken" value="" placeholder="2FA optional" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
         <br>
         <input type="submit" value="Submit"/>
+        <script src="{{ url_for('static', filename='js/2f_form.js') }}"></script>
         </fieldset>
     </form>
     <video id="background-video" autoplay muted loop tabindex="-1">

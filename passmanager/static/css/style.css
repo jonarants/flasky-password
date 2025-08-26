@@ -355,6 +355,10 @@ footer a:hover {
     color: var(--primary-purple);
 }
 
+#twofatoken {
+    display: none;
+}
+
 
 
 /* Responsive Design (para móviles) */

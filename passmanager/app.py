@@ -111,7 +111,7 @@ def login_validation():
     password = request.form['password']
     connection = None
     cursor = None
-    twofatoken = request.form['2fatoken']
+    twofatoken = request.form['twofatoken']
     user_record = None
     try:
         connection, cursor = db_utils.connect()
