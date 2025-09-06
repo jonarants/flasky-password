@@ -14,7 +14,7 @@ docker volume create myDB
 ```
 
 
-Volumen: myDB (Persistencia de datos)
+Volumen: myDB (Persistencia de datos) xd
 
 ## Creación del contenedor
 ```bash
