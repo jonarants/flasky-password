@@ -4,7 +4,7 @@
 
 - Estos pasos son para la creación de la base de datos, es una ligera desviación de lo que ese establece en el texto, pero se usa a manera de dar el sigumiento apropiado usando un contenedor de docker para crear la base de datos que se usara a lo largo de este aprendizaje.
 
-- Como tal se creo un volumen, los pasos están acomodados por encabezados para dar un seguimiento apropiado al texto.
+- Como tal se creo un volumen, los pasos están acomodados por encabezados para dar un seguimiento apropiado al texto. Asi es.
 
 
 ## Nombre del volumen
@@ -173,5 +173,6 @@ docker run -d -p 8080:8080 --name nginx nginx:v1
 
 ```powershell
 pip freeze | ForEach-Object { pip uninstall -y $_ }
+
 
 ```
